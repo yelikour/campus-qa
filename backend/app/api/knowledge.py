@@ -59,7 +59,7 @@ def delete_knowledge(doc_id: str):
 @router.get("/search")
 def search_knowledge(q: str = Query(min_length=1), top_k: int = 5):
     t0 = __import__("time").perf_counter()
-    results = retriever.retrieve(q, top_k=top_k)
+    results = retriever.retrieve(q, top_k=top_k, rerank=settings.RERANK_ENABLED)
     ms = (__import__("time").perf_counter() - t0) * 1000
     return {"query": q, "elapsed_ms": round(ms, 1), "results": [
         {"doc_id": r.chunk.doc_id, "text": r.chunk.text, "category": r.chunk.category,

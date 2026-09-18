@@ -353,12 +353,29 @@ class HybridRetriever:
                 if len(results) >= top_k:
                     break
             return results
-        # RRF 分数量级 ≈ 1/(k+1),不适用 MIN_RELEVANCE;仅用于评测/对照
-        return [
-            RetrievedChunk(chunk=self.chunks[i], score=round(s, 4),
-                           bm25_rank=rk.get("bm25"), vec_rank=rk.get("vec"))
-            for i, s, rk in fused[:top_k]
-        ]
+        # RRF 路径(生产默认,由 RERANK_ENABLED=0 选择):保留无知识兜底 ——
+        # 全部候选与查询实质词(含同义词 tags)零交集时视为无相关知识,返回空触发回退话术
+        if fused:
+            q_tokens = set(tokenize(query))
+            def _hard(i: int) -> bool:
+                c = self.chunks[i]
+                ct = set(tokenize(f"{c.text} {' '.join(c.tags)}"))
+                return bool(q_tokens & ct) or any(t in q_tokens for t in c.tags)
+            if not any(_hard(i) for i, _, _ in fused):
+                return []
+        # 文档级去重(与 rerank 分支一致):同一文档的双通道 chunk 只保留最高分一条
+        seen: set[str] = set()
+        out: list[RetrievedChunk] = []
+        for i, s, rk in fused:
+            doc = self.chunks[i].doc_id
+            if doc in seen:
+                continue
+            seen.add(doc)
+            out.append(RetrievedChunk(chunk=self.chunks[i], score=round(s, 4),
+                                      bm25_rank=rk.get("bm25"), vec_rank=rk.get("vec")))
+            if len(out) >= top_k:
+                break
+        return out
 
 
 # 单例:由 ingestion 服务负责装载与热更新

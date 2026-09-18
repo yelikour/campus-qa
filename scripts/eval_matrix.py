@@ -8,6 +8,10 @@
   Hybrid+Rerank    —— 生产全链路(RRF + 特征化轻量重排 + MIN_RELEVANCE 阈值)
 
 指标:Hit@1 / Hit@3 / MRR(评估单位为文档级,chunk 命中按 doc_id 去重保序)。
+口径:四条链路统一为文档级去重口径(Hybrid+RRF 直接消费 fuse_rrf 原始融合输出,
+每通道 top-20 chunks 取前 10,再按文档去重 —— 与 BM25/Vector 路径口径一致)。
+注:早期版本 RRF 口径存在"同文档双通道 chunk 重复占位"失真(Hit@3=95.2),
+生产链路补齐文档级去重后统一口径实测 Hit@3=98.4,以此为准。
 """
 import sys
 
@@ -87,7 +91,9 @@ if __name__ == "__main__":
           f"向量通道:{retriever.embedder_name}(非语义嵌入,见材料说明)\n")
     m_bm25 = evaluate("BM25-only", lambda q: doc_ranking(retriever.bm25.search(q, 10)))
     m_vec = evaluate("Vector-only", lambda q: doc_ranking(retriever.vector.search(q, 10)))
-    m_rrf = evaluate("Hybrid+RRF", lambda q: [r.chunk.doc_id for r in retriever.retrieve(q, top_k=10, rerank=False)])
+    # 口径说明:RRF 评测直接使用 fuse_rrf 原始融合输出(每通道 top-20 chunks,取前 10),
+    # 与 BM25/Vector 路径同口径;生产 retrieve(rerank=False) 内部的文档级去重不参与评测
+    m_rrf = evaluate("Hybrid+RRF", lambda q: doc_ranking(retriever.fuse_rrf(q, candidate_k=20)[:10]))
     m_full = evaluate("Hybrid+Rerank", lambda q: [r.chunk.doc_id for r in retriever.retrieve(q, top_k=10)])
 
     print("\nHybrid+Rerank 未命中样例(供归因):")

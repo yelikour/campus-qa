@@ -1,0 +1,28 @@
+===== CampusMind FINAL VALIDATION =====
+Date: 2026-09-18 13:56:55
+HEAD: 5d9699588bc976f8f22ddc22d23a7ae2bc33c580
+
+--- [1] smoke pytest ---
+....                                                                     [100%]
+4 passed in 0.27s
+
+--- [2] retrieval evaluation matrix (n=62, unified doc-dedup caliber) ---
+BM25-only        Hit@1=80.6%  Hit@3=98.4%  MRR=0.884
+Vector-only      Hit@1=75.8%  Hit@3=93.5%  MRR=0.844
+Hybrid+RRF       Hit@1=80.6%  Hit@3=98.4%  MRR=0.884
+Hybrid+Rerank    Hit@1=74.2%  Hit@3=90.3%  MRR=0.815
+Hybrid+Rerank 未命中样例(供归因):
+
+--- [3] benchmarks ---
+[retrieval-only x300] 请求 300 | 失败 0 | 总耗时 1.19s | 吞吐 251.4 QPS | p50 3.4ms | p95 7.0ms | p99 7.2ms
+[local-extractive E2E x200(并发20)] 请求 200 | 失败 0 | 总耗时 4.54s | 吞吐 44.1 QPS | p50 415.7ms | p95 601.0ms | p99 611.1ms
+
+--- [4] architecture acceptance ---
+PASS  A1 生成降级(云端无效 Key → 本地抽取式)  provider=zhipu-glm 降级产出 139 字,内容含正解关键信息
+PASS  A4 无知识兜底(不编造,回退引导话术)  sources=0 条,回答含回退话术=True
+PASS  A3 知识热更新(录入即检索,验收后清理)  版本 1→2→3,即时命中=True,即时回答=True,清理=True
+PASS  A2 入口限流(令牌桶 5QPS/突发10)  并发 15:200x10 / 429x5(超出桶容量的请求被拒)
+验收结果:4/4 PASS
+
+--- [5] default route ---
+llm=local embedding=local-tfidf rerank_enabled=False index_version=3 chunks=136

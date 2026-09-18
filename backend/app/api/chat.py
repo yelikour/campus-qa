@@ -34,7 +34,7 @@ async def chat(req: ChatRequest, x_user_token: str | None = Header(default=None)
 
     # 1. 混合检索
     t0 = time.perf_counter()
-    results = retriever.retrieve(req.message)
+    results = retriever.retrieve(req.message, rerank=settings.RERANK_ENABLED)
     retrieval_ms = (time.perf_counter() - t0) * 1000
 
     sources = [

@@ -19,6 +19,9 @@ class Settings:
     CHUNK_TOP_K = 5          # 融合后送入重排的候选数
     FINAL_TOP_K = 3          # 最终送入生成的上下文条数
     RRF_K = 60               # Reciprocal Rank Fusion 常数
+    # 重排实验开关:62 条评测实测轻量词面重排无收益(74.2/90.3 vs RRF 80.6/95.2),
+    # 默认链路为 Hybrid+RRF;置 RERANK_ENABLED=1 开启重排(组合排序+兜底阈值)
+    RERANK_ENABLED = os.getenv("RERANK_ENABLED", "0") == "1"
     # 低于该分数视为无相关知识,触发兜底话术(62 条评测标定:0.15 会误杀
     # 口语化弱重叠的正解,0.06 以下会放入无关命中,取 0.08)
     MIN_RELEVANCE = float(os.getenv("MIN_RELEVANCE", "0.08"))

@@ -151,7 +151,7 @@ const flow = [
   ["BM25 \u7a00\u758f\u901a\u9053", "\u5173\u952e\u8bcd\u7cbe\u786e\u5339\u914d", PRIMARY, "FFFFFF"],
   ["TF-IDF \u5411\u91cf\u901a\u9053", "\u79bb\u7ebf\u8bcd\u888b \u00b7 \u53ef\u63d2\u62d4\u8bed\u4e49\u5411\u91cf", PURPLE, "FFFFFF"],
   ["RRF \u878d\u5408", "\u6309\u6392\u540d\u878d\u5408 k=60", DEEP2, "FFFFFF"],
-  ["\u91cd\u6392\u5e8f Top-3", "\u7279\u5f81\u5316\u7cbe\u6392", ACCENT, "FFFFFF"],
+  ["\u91cd\u6392\u5e8f(\u53ef\u9009\u5f00\u5173)", "\u9ed8\u8ba4\u5173\u95ed RERANK_ENABLED", ACCENT, "FFFFFF"],
 ];
 const fx = [0.55, 2.75, 2.75, 5.45, 7.5], fy = [2.7, 1.66, 3.74, 2.7, 2.7], fw = 2.05, fh = 1.06;
 s.addShape(p.shapes.ROUNDED_RECTANGLE, { x: fx[0], y: fy[0], w: fw, h: fh, fill: { color: flow[0][2] }, rectRadius: 0.09, line: { type: "none" }, shadow: sh() });
@@ -179,7 +179,7 @@ s.addShape(p.shapes.LINE, { x: fx[4] + fw, y: fy[4] + fh / 2, w: 10.35 - fx[4] -
 card(s, M, 5.35, W - 2 * M, 1.5, "FFFFFF");
 s.addText([
   { text: "\u53ef\u89c2\u5bdf\u6027\u8bbe\u8ba1\uff1a", options: { bold: true, color: PRIMARY, fontSize: 13.5 } },
-  { text: "\u8c03\u8bd5\u63a5\u53e3\u4e0e\u524d\u7aef\u5f15\u7528\u5361\u7247\u540c\u6b65\u66b4\u9732\u53cc\u901a\u9053\u6392\u540d\u4e0e\u91cd\u6392\u5206\u6570 \u2014\u2014 \u68c0\u7d22\u8fc7\u7a0b\u53ef\u89e3\u91ca\u3001\u53ef\u8bfe\u4ef6\u5316\u3001\u53ef\u8c03\u53c2\uff08\u5982\u53f3\u56fe\uff1aBM25#1 \u00b7 VEC#1 \u00b7 85%\uff09", options: { color: TEXT, fontSize: 13 } },
+  { text: "\u8c03\u8bd5\u63a5\u53e3\u4e0e\u524d\u7aef\u5f15\u7528\u5361\u7247\u540c\u6b65\u66b4\u9732\u53cc\u901a\u9053\u6392\u540d\u4e0e\u878d\u5408\u5206\u6570 \u2014\u2014 \u68c0\u7d22\u8fc7\u7a0b\u53ef\u89e3\u91ca\u3001\u53ef\u8bfe\u4ef6\u5316\u3001\u53ef\u8c03\u53c2\uff08\u5982\u53f3\u56fe\uff1aBM25#1 \u00b7 VEC#1 \u00b7 85%\uff09", options: { color: TEXT, fontSize: 13 } },
 ], { x: M + 0.35, y: 5.55, w: W - 2 * M - 0.7, h: 1.1, fontFace: FONT, margin: 0, valign: "middle", lineSpacingMultiple: 1.35 });
 s.addNotes("\u6df7\u5408\u68c0\u7d22\u4e09\u6bb5\u5f0f:\u4e24\u8def\u5e76\u884c\u53ec\u56de\u2192RRF\u878d\u5408\u2192\u91cd\u6392\u7cbe\u9009\u3002\u53cc\u6a21\u751f\u6210:\u672c\u5730\u62bd\u53d6\u5f0f\u4fdd\u964d\u7ea7,\u4e91\u7aefGLM\u4fdd\u6548\u679c\u3002");
 
@@ -188,7 +188,7 @@ s = p.addSlide();
 page(s, 8, 16, "\u5173\u952e\u67b6\u6784\u51b3\u7b56\uff08ADR \u6458\u8981\uff09", "\u6bcf\u4e2a\u51b3\u7b56\u90fd\u6709\u88ab\u5426\u51b3\u7684\u5907\u9009\u65b9\u6848\u4e0e\u7406\u7531");
 const adr = [
   ["ADR-1 \u6a21\u5757\u5316\u5355\u4f53\u8d77\u6b65", "\u5426\u51b3\u5fae\u670d\u52a1\u5168\u5bb6\u6876\uff088 \u5468\u5de5\u671f\u4e0d\u5bb9\u8bb8\uff09\u4e0e\u7eaf\u5206\u5c42\uff08\u62c6\u5206\u4ee3\u4ef7\u9ad8\uff09\uff0c\u4fdd\u7559\u670d\u52a1\u5316\u8fb9\u754c"],
-  ["ADR-2 \u6df7\u5408\u68c0\u7d22+RRF+\u91cd\u6392", "\u5426\u51b3\u5355\u4e00\u901a\u9053\uff1b\u5411\u91cf\u73b0\u6001 TF-IDF\uff0c\u4e91\u7aef\u8bed\u4e49 Provider \u53ef\u63d2\u62d4\uff08ADR-7\uff09"],
+  ["ADR-2 \u6df7\u5408\u68c0\u7d22\u9ed8\u8ba4 RRF", "\u5426\u51b3\u5355\u4e00\u901a\u9053\uff1b\u91cd\u6392\u5b9e\u6d4b\u65e0\u6536\u76ca\u964d\u4e3a\u5f00\u5173\uff1b\u5411\u91cf\u73b0\u6001 TF-IDF\uff08ADR-7\uff09"],
   ["ADR-3 SSE \u627f\u8f7d\u6d41\u5f0f\u56de\u7b54", "\u5426\u51b3 WebSocket\uff1a\u5355\u5411\u63a8\u9001\u573a\u666f\u66f4\u8f7b\u91cf\u3001\u5bf9\u7f51\u5173\u53cb\u597d\uff1bWS \u7559\u5f85\u540e\u7eed\u53cc\u5411\u573a\u666f"],
   ["ADR-4 \u751f\u6210 Provider \u63d2\u4ef6\u5316", "\u5426\u51b3\u5f3a\u4f9d\u8d56\u4e91\u7aef LLM\uff1a\u6f14\u793a\u53ef\u79bb\u7ebf\u8dd1\uff0c\u4e91\u7aef\u6545\u969c\u81ea\u52a8\u964d\u7ea7\u4e0d\u4e2d\u65ad"],
   ["ADR-5 \u5185\u5b58\u7d22\u5f15+\u70ed\u91cd\u5efa", "\u5426\u51b3\u6bcf\u8bf7\u6c42\u91cd\u5efa\u7d22\u5f15\uff1b\u4e07\u7ea7 chunk \u5185\u5b58\u8db3\u591f\uff0c\u8d85\u51fa\u518d\u8fc1\u5411\u91cf\u5e93"],
@@ -267,10 +267,10 @@ s.addNotes("\u70ed\u66f4\u65b0\u95ed\u73af:\u5f55\u5165\u5230\u53ef\u88ab\u68c0\
 /* ============ 12 评测矩阵:四条链路对比(原生图表) ============ */
 s = p.addSlide();
 page(s, 12, 18, "\u8bc4\u6d4b\u77e9\u9635\uff1a62 \u6761\u53e3\u8bed\u5316\u6539\u5199 \u00d7 \u56db\u6761\u94fe\u8def", "\u8bc4\u4f30\u5355\u4f4d\u4e3a\u6587\u6863\u7ea7\uff1b\u5411\u91cf\u901a\u9053\u4e3a TF-IDF \u8bcd\u888b\uff08\u975e\u8bed\u4e49\u5d4c\u5165\uff0c\u5982\u5b9e\u6807\u6ce8\uff09");
-const evLabels = ["BM25-only", "Vector(TF-IDF)", "Hybrid+RRF", "Hybrid+Rerank(\u751f\u4ea7)"];
+const evLabels = ["BM25-only", "Vector(TF-IDF)", "Hybrid+RRF(\u9ed8\u8ba4)", "Hybrid+Rerank(\u5f00\u5173)"];
 s.addChart(p.charts.BAR, [
   { name: "Hit@1", labels: evLabels, values: [80.6, 75.8, 80.6, 74.2] },
-  { name: "Hit@3", labels: evLabels, values: [98.4, 93.5, 95.2, 90.3] },
+  { name: "Hit@3", labels: evLabels, values: [98.4, 93.5, 98.4, 90.3] },
 ], {
   x: M, y: 1.7, w: 7.1, h: 4.35, barDir: "col", barGapWidthPct: 55,
   chartColors: ["A8B5E8", PRIMARY],
@@ -281,16 +281,16 @@ s.addChart(p.charts.BAR, [
   showLegend: true, legendPos: "b", legendColor: MUTED, legendFontSize: 11,
   valAxisTitle: "\u547d\u4e2d\u7387 %", showValAxisTitle: true, valAxisTitleColor: MUTED, valAxisTitleFontSize: 10,
 });
-s.addText("\u6570\u636e\u6e90\uff1ascripts/eval_matrix.py\uff0cn=62\uff0cMRR\uff1a0.884 / 0.844 / 0.863 / 0.815", { x: M, y: 6.12, w: 7.1, h: 0.3, fontSize: 10, color: MUTED, fontFace: FONT, margin: 0 });
+s.addText("\u6570\u636e\u6e90\uff1ascripts/eval_matrix.py\uff0cn=62\uff0c\u7edf\u4e00\u6587\u6863\u7ea7\u53bb\u91cd\u53e3\u5f84\uff0cMRR\uff1a0.884 / 0.844 / 0.884 / 0.815", { x: M, y: 6.12, w: 7.1, h: 0.3, fontSize: 10, color: MUTED, fontFace: FONT, margin: 0 });
 card(s, 7.95, 1.7, 4.8, 2.15, "FFFFFF");
 s.addText([
   { text: "\u8c03\u4f18\u8fc7\u7a0b\u4fee\u590d\u4e09\u4e2a\u771f\u5b9e\u7f3a\u9677\uff1a", options: { bold: true, color: ACCENT, fontSize: 12.5, breakLine: true } },
-  { text: "\u2460 \u505c\u7528\u8bcd\u8868\u6784\u9020 bug\uff08\u6574\u4e32\u672a split\uff09\u2461 RRF \u5019\u9009\u6c60\u622a\u65ad\u538b\u7f29\u6587\u6863\u591a\u6837\u6027 \u2462 \u7f3a\u6587\u6863\u7ea7\u53bb\u91cd\uff08\u5f15\u7528\u5361\u7247\u91cd\u590d\u6839\u56e0\uff09\uff0c\u751f\u4ea7\u94fe\u8def Hit@3 82.3% \u2192 90.3%", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "\u2460 \u505c\u7528\u8bcd\u8868\u6784\u9020 bug\uff08\u6574\u4e32\u672a split\uff09\u2461 RRF \u5019\u9009\u6c60\u622a\u65ad\u538b\u7f29\u6587\u6863\u591a\u6837\u6027 \u2462 \u7f3a\u6587\u6863\u7ea7\u53bb\u91cd\uff08\u5f15\u7528\u5361\u7247\u91cd\u590d\u6839\u56e0\uff09\uff0c\u7edf\u4e00\u53e3\u5f84\u540e RRF \u5b9e\u6d4b 98.4%\uff08\u65e7\u53e3\u5f84 95.2% \u5b58\u5728\u91cd\u590d\u5360\u4f4d\u5931\u771f\uff09", options: { color: TEXT, fontSize: 11.5 } },
 ], { x: 8.2, y: 1.92, w: 4.3, h: 1.8, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 5, lineSpacingMultiple: 1.25 });
 card(s, 7.95, 4.0, 4.8, 2.0, DEEP);
 s.addText([
   { text: "\u5b9e\u8bc1\u7ed3\u8bba\uff1a", options: { bold: true, color: ACCENT, fontSize: 12.5 } },
-  { text: "\u8f7b\u91cf\u8bcd\u9762\u91cd\u6392\u65e0\u6cd5\u7a33\u5b9a\u8d85\u8d8a\u53cc\u901a\u9053\u6392\u5e8f\uff0c\u5176\u4ef7\u503c\u5728\u8d28\u91cf\u63a7\u5236\uff08\u5151\u5e95\u9608\u503c\uff09\uff1b\u6392\u5e8f\u589e\u76ca\u9700 Cross-Encoder\uff0c\u5df2\u5217\u6f14\u8fdb\uff08\u4e0e ADR-2/4 \u547c\u5e94\uff09", options: { color: "C9D2F5", fontSize: 11.5 } },
+  { text: "BM25 \u5bf9\u5173\u952e\u8bcd\u5bc6\u96c6\u578b\u89c4\u7ae0\u95ee\u9898\u6700\u597d\uff1bTF-IDF \u5411\u91cf\u8865\u5145\u53e6\u4e00\u89c6\u89d2\u4f46\u672a\u7a33\u5b9a\u8d85\u8fc7 BM25\uff1b\u8f7b\u91cf Reranker \u5b9e\u6d4b\u65e0\u6536\u76ca\uff0c\u9ed8\u8ba4\u5173\u95ed\u4fdd\u6301 Provider \u5316\uff0c\u5f85\u66ff\u6362 Cross-Encoder \u540e\u518d\u8bc4\u4f30", options: { color: "C9D2F5", fontSize: 11.5 } },
 ], { x: 8.2, y: 4.22, w: 4.3, h: 1.65, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 5, lineSpacingMultiple: 1.3 });
 s.addNotes("\u56db\u8def\u8bc4\u6d4b:BM25\u6700\u5f3a\u3002\u8c03\u4f18\u4fee\u590d\u4e09\u7f3a\u9677\u540e\u751f\u4ea7\u94fe\u8def\u63d0\u5347\u523087%\u4ee5\u4e0a0\u8fd1\u6c34\u5e73\u3002\u5b9e\u8bc1\u7ed3\u8bba\u8bda\u5b9e\u5448\u73b0\u3002");
 
@@ -299,8 +299,8 @@ s = p.addSlide();
 page(s, 13, 18, "\u6027\u80fd\u57fa\u51c6\uff1a\u68c0\u7d22\u4e0e\u5168\u94fe\u8def\u62c6\u5206\u5b9e\u6d4b", "retrieval-only \u8fdb\u7a0b\u5185\u76f4\u8c03\uff1blocal-extractive E2E \u542b\u68c0\u7d22+\u6d41\u5f0f\u751f\u6210+\u843d\u5e93\uff08HTTP\uff0c\u5e76\u53d1 20\uff09");
 const perfRows = [
   ["\u57fa\u51c6", "\u6837\u672c", "QPS", "p50", "p95", "p99", "\u5931\u8d25"],
-  ["retrieval-only", "300", "217.8", "4.1ms", "8.7ms", "9.5ms", "0"],
-  ["local-extractive E2E", "200", "42.0", "436ms", "632ms", "683ms", "0"],
+  ["retrieval-only", "300", "251.4", "3.4ms", "7.0ms", "7.2ms", "0"],
+  ["local-extractive E2E", "200", "44.1", "415.7ms", "601.0ms", "611.1ms", "0"],
 ];
 s.addTable(perfRows.map((r, i) => r.map((c) => ({
   text: c,
@@ -311,12 +311,12 @@ s.addTable(perfRows.map((r, i) => r.map((c) => ({
   x: M, y: 1.75, w: W - 2 * M, colW: [3.3, 1.3, 1.5, 1.6, 1.6, 1.6, 1.28],
   border: { pt: 0.5, color: LINE }, fontFace: FONT, rowH: 0.58, margin: 0.06,
 });
-stat(s, M + 0.4, 4.15, 5.4, "217.8", "retrieval-only \u541e\u5410\uff08QPS\uff09", PRIMARY, "p95 8.7ms\uff0c\u8fdc\u4f18\u4e8e 50ms \u76ee\u6807");
-stat(s, M + 6.6, 4.15, 5.4, "42.0", "E2E \u541e\u5410\uff08QPS\uff0c\u542b\u751f\u6210\uff09", PURPLE, "p99 683ms\uff0c200/200 \u6210\u529f");
+stat(s, M + 0.4, 4.15, 5.4, "251.4", "retrieval-only \u541e\u5410\uff08QPS\uff09", PRIMARY, "p95 7.0ms\uff0c\u8fdc\u4f18\u4e8e 50ms \u76ee\u6807");
+stat(s, M + 6.6, 4.15, 5.4, "44.1", "E2E \u541e\u5410\uff08QPS\uff0c\u542b\u751f\u6210\uff09", PURPLE, "p99 611ms\uff0c200/200 \u6210\u529f");
 card(s, M, 5.85, W - 2 * M, 0.95, "FFFFFF");
 s.addText([
   { text: "\u5982\u5b9e\u8bf4\u660e\uff1a", options: { bold: true, color: ACCENT, fontSize: 12 } },
-  { text: "E2E \u541e\u5410\u8f83\u65e9\u671f 67.8 QPS \u4e0b\u964d\uff0c\u56e0\u672c\u8f6e\u4fee\u590d\u540e\u68c0\u7d22\u94fe\u8def\u66f4\u5b8c\u6574\uff08\u5019\u9009\u6c60 4\u00d7\u3001\u6587\u6863\u7ea7\u53bb\u91cd\u3001\u7ec4\u5408\u6392\u5e8f\uff09\uff0c\u4ee5\u51c6\u786e\u6027\u4f18\u5148\u3002", options: { color: TEXT, fontSize: 12 } },
+  { text: "\u5386\u53f2\u5bf9\u7167\uff1aRerank \u9ed8\u8ba4\u65f6\u671f 217.8 / 42.0 QPS\uff0c\u521d\u7248 67.8 QPS\uff1b\u9ed8\u8ba4\u5207\u6362\u81f3 RRF \u540e\u68c0\u7d22\u8ba1\u7b97\u91cf\u4e0b\u964d\uff0c\u541e\u5410\u56de\u5347\uff0c\u6570\u636e\u5982\u5b9e\u5448\u73b0\u3002", options: { color: TEXT, fontSize: 12 } },
 ], { x: M + 0.3, y: 6.02, w: W - 2 * M - 0.6, h: 0.62, fontFace: FONT, margin: 0, valign: "middle" });
 s.addText("\u6570\u636e\u6e90\uff1ascripts/bench.py\uff08retrieval / e2e \u4e24\u6a21\u5f0f\uff09\uff0c2026-09-18 \u5b9e\u6d4b", { x: M, y: 6.95, w: W - 2 * M, h: 0.3, fontSize: 10, color: MUTED, fontFace: FONT, margin: 0 });
 s.addNotes("\u6027\u80fd\u62c6\u5206:\u68c0\u7d22217QPS\u8fdc\u8d85\u76ee\u6807;E2E\u542b\u751f\u621042QPS\u3002\u541e\u5410\u4e0b\u964d\u7684\u539f\u56e0\u5982\u5b9e\u8bf4\u660e\u3002");
