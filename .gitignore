@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+video/.build/
+video/audio/*.aiff
+video/audio/*.m4a
+nohup.out
+.DS_Store
+.build/node_modules/
+backend/app/data/campusqa.db*

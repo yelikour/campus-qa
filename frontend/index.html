@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智问校园 CampusMind · AI+RAG 校园智能问答</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <!-- ============ 侧栏 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">智</div>
+      <div>
+        <div class="brand-name">智问校园</div>
+        <div class="brand-sub">CampusMind · AI+RAG</div>
+      </div>
+    </div>
+    <button class="btn-new" onclick="newConversation()">＋ 新的提问</button>
+    <nav class="views">
+      <button class="view-tab active" data-view="chat" onclick="switchView('chat')">💬 智能问答</button>
+      <button class="view-tab" data-view="kb" onclick="switchView('kb')">📚 知识库管理</button>
+      <button class="view-tab" data-view="dash" onclick="switchView('dash')">📊 运行看板</button>
+    </nav>
+    <div class="history-head">历史会话</div>
+    <div class="history" id="history"></div>
+    <div class="sidebar-foot">
+      <span class="provider-badge" id="providerBadge">检索增强生成引擎</span>
+    </div>
+  </aside>
+
+  <!-- ============ 聊天视图 ============ -->
+  <main class="main" id="view-chat">
+    <header class="topbar">
+      <div>
+        <h1>校园事务 · 智能问答</h1>
+        <p class="topbar-sub">基于 RAG(检索增强生成)· 混合检索 BM25+向量 · 回答附引用溯源</p>
+      </div>
+      <div class="topbar-status"><span class="dot"></span>知识库 <b id="chunkCount">—</b> chunks 已索引 · <span id="engineInfo" style="color:#7c4dff">引擎加载中…</span></div>
+    </header>
+    <section class="messages" id="messages">
+      <div class="hero">
+        <div class="hero-icon">🎓</div>
+        <h2>你好,同学!</h2>
+        <p>我可以解答教务选课、图书馆、宿舍、卡务、奖助、就业等校园事务问题。<br>所有回答均来自校内知识库,并标注信息来源。</p>
+        <div class="chips" id="chips">
+          <button onclick="quickAsk(this)">图书馆开放时间是几点?</button>
+          <button onclick="quickAsk(this)">校园卡丢了怎么挂失?</button>
+          <button onclick="quickAsk(this)">奖学金怎么申请?</button>
+          <button onclick="quickAsk(this)">宿舍可以用电饭锅吗?</button>
+          <button onclick="quickAsk(this)">论文查重要求是多少?</button>
+        </div>
+      </div>
+    </section>
+    <footer class="composer">
+      <div class="composer-box">
+        <input id="input" placeholder="输入你的校园问题,回车发送…" autocomplete="off"
+               onkeydown="if(event.key==='Enter'&&!event.isComposing)send()">
+        <button class="btn-send" onclick="send()">发送</button>
+      </div>
+      <div class="composer-tip">内容由 AI 基于校内知识库生成,仅供参考 · 请以学校官方通知为准</div>
+    </footer>
+  </main>
+
+  <!-- ============ 知识库视图 ============ -->
+  <main class="main hidden" id="view-kb">
+    <header class="topbar">
+      <div><h1>知识库管理</h1><p class="topbar-sub">新增条目即时重建双通道索引(热更新),无需重启服务</p></div>
+    </header>
+    <section class="kb-body">
+      <div class="kb-toolbar">
+        <select id="kbCategory" onchange="loadKnowledge(1)"><option value="">全部分类</option></select>
+        <input id="kbSearch" placeholder="搜索知识条目…" onkeydown="if(event.key==='Enter')loadKnowledge(1)">
+        <button class="btn-mini" onclick="loadKnowledge(1)">搜索</button>
+        <span class="kb-count" id="kbCount"></span>
+        <button class="btn-mini primary" onclick="toggleKbForm()">＋ 新增条目</button>
+      </div>
+      <div class="kb-form hidden" id="kbForm">
+        <input id="formCat" placeholder="分类(如:教务选课)">
+        <input id="formQ" placeholder="标准问法,如:辅修专业如何报名?">
+        <textarea id="formA" rows="3" placeholder="标准答案正文…"></textarea>
+        <input id="formSrc" placeholder="信息来源(如:教务处管理办法)">
+        <button class="btn-mini primary" onclick="submitKnowledge()">提交并重建索引</button>
+      </div>
+      <div class="kb-list" id="kbList"></div>
+      <div class="kb-pager">
+        <button class="btn-mini" onclick="loadKnowledge(curPage-1)">上一页</button>
+        <span id="kbPage"></span>
+        <button class="btn-mini" onclick="loadKnowledge(curPage+1)">下一页</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 看板视图 ============ -->
+  <main class="main hidden" id="view-dash">
+    <header class="topbar">
+      <div><h1>运行看板</h1><p class="topbar-sub">问答量 / 命中率 / 时延 / 热点分类 —— 支撑运营与容量规划</p></div>
+      <button class="btn-mini primary" onclick="loadDash()">刷新</button>
+    </header>
+    <section class="dash-body">
+      <div class="cards" id="dashCards"></div>
+      <div class="chart-card">
+        <h3>热点问题分类 Top</h3>
+        <div class="bars" id="dashBars"></div>
+      </div>
+      <div class="arch-note">
+        <h3>RAG 链路</h3>
+        <p>问题 → <b>混合检索</b>(BM25 ∥ 向量)→ <b>RRF 融合</b> → <b>重排序</b> → <b>流式生成</b>(SSE)→ 引用溯源</p>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
