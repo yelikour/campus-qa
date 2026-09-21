@@ -62,7 +62,7 @@ s.addText("\u57fa\u4e8e AI + RAG \u7684\u6821\u56ed\u667a\u80fd\u95ee\u7b54\u7cf
   s.addText(t, { x, y: 4.8, w: t.length * 0.19 + 0.42, h: 0.36, fontSize: 12, color: "AFBCF0", fontFace: FONT, align: "center", margin: 0 });
 });
 s.addText([
-  { text: "\u6c47\u62a5\u4eba\uff1aCampusMind \u9879\u76ee\u7ec4\uff083\u20135 \u4eba\uff09", options: { breakLine: true } },
+  { text: "\u6c47\u62a5\u4eba\uff1a\u738b\u82e5\u748b\uff08\u7ec4\u957f/\u67b6\u6784\uff09 \u00b7 \u4f55\u4fd0 \u00b7 \u90ed\u795a\u6881", options: { breakLine: true } },
   { text: "2026 \u5e74 9 \u6708 18 \u65e5", options: {} },
 ], { x: 1.2, y: 6.15, w: W - 2.4, h: 0.75, fontSize: 13, color: "8B97C9", fontFace: FONT, align: "center", paraSpaceAfter: 4, margin: 0 });
 s.addNotes("\u5f00\u573a:\u5927\u5bb6\u597d,\u6211\u4eec\u7684\u8bfe\u7a0b\u9879\u76ee\u662f\u667a\u95ee\u6821\u56ed\u2014\u2014\u4e00\u4e2a\u57fa\u4e8eAI+RAG\u7684\u6821\u56ed\u667a\u80fd\u95ee\u7b54\u7cfb\u7edf\u3002\u5148\u770b44\u79d2\u6f14\u793a\u518d\u5c55\u5f00\u8bb2\u67b6\u6784\u3002");
@@ -128,7 +128,7 @@ s.addTable(rows.map((r, i) => r.map((c, j) => ({
   x: M, y: 1.62, w: W - 2 * M, colW: [1.55, 5.4, 3.6, 1.65],
   border: { pt: 0.5, color: LINE }, fontFace: FONT, rowH: 0.62, margin: 0.09,
 });
-s.addText("\u7ea6\u675f\u6761\u4ef6\uff1a8 \u5468\u5de5\u671f \u00b7 3\u20135 \u4eba\u56e2\u961f \u00b7 \u96f6\u9884\u7b97\u6f14\u793a \u00b7 \u56de\u7b54\u5fc5\u987b\u53ef\u6eaf\u6e90\u4e0d\u7f16\u9020", { x: M, y: 6.0, w: W - 2 * M, h: 0.35, fontSize: 12, color: MUTED, fontFace: FONT, margin: 0 });
+s.addText("\u7ea6\u675f\u6761\u4ef6\uff1a8 \u5468\u5de5\u671f \u00b7 3 \u4eba\u56e2\u961f \u00b7 \u96f6\u9884\u7b97\u6f14\u793a \u00b7 \u56de\u7b54\u5fc5\u987b\u53ef\u6eaf\u6e90\u4e0d\u7f16\u9020", { x: M, y: 6.0, w: W - 2 * M, h: 0.35, fontSize: 12, color: MUTED, fontFace: FONT, margin: 0 });
 s.addNotes("\u8d28\u91cf\u5c5e\u6027\u573a\u666f\u516d\u5143\u7ec4:\u6bcf\u4e2a\u5c5e\u6027\u6709\u573a\u666f\u3001\u76ee\u6807\u3001\u843d\u70b9\u3002\u7ea6\u675f:\u77ed\u5de5\u671f\u3001\u96f6\u9884\u7b97\u3001\u53ef\u6eaf\u6e90\u3002");
 
 /* ============ 5 总体架构 ============ */
@@ -400,7 +400,7 @@ plan.forEach(([w, t, d], i) => {
 card(s, M, 5.35, W - 2 * M, 1.45, DEEP);
 s.addText([
   { text: "\u89d2\u8272\u5206\u5de5\uff1a", options: { bold: true, color: ACCENT, fontSize: 13.5 } },
-  { text: "\u67b6\u6784\u5e08\uff08\u603b\u63a7\u67b6\u6784\u4e0e ADR\uff09\u00b7 \u540e\u7aef\u5de5\u7a0b \u00d72\uff08\u68c0\u7d22\u5f15\u64ce\u4e0e API\uff09\u00b7 \u524d\u7aef\u5de5\u7a0b\uff08\u804a\u5929\u4e0e\u770b\u677f\uff09\u00b7 \u6570\u636e\u8fd0\u8425\uff08\u77e5\u8bc6\u5e93\u4e0e\u540c\u4e49\u8bcd\uff09\u00b7 \u6d4b\u8bd5\uff08\u8bc4\u6d4b\u4e0e\u538b\u6d4b\uff09", options: { color: "C9D2F5", fontSize: 13 } },
+  { text: "\u738b\u82e5\u748b\uff08\u7ec4\u957f/\u67b6\u6784\uff1a\u67b6\u6784\u4e0e ADR\u3001\u68c0\u7d22\u5f15\u64ce\u3001\u6d4b\u8bd5\u9a8c\u6536\uff09\u00b7 \u4f55\u4fd0\uff08\u540e\u7aef/\u6570\u636e\uff1a\u751f\u6210\u4e0e Provider\u3001\u6444\u53d6\u4e0e\u70ed\u66f4\u65b0\u3001\u8bc4\u6d4b\u96c6\uff09\u00b7 \u90ed\u795a\u6881\uff08\u524d\u7aef/\u6750\u6599\uff1a\u4e09\u89c6\u56fe\u3001\u6d41\u5f0f\u6eaf\u6e90\u3001\u6587\u6863\u4e0e\u7b54\u8fa9\u6750\u6599\uff09", options: { color: "C9D2F5", fontSize: 11 } },
 ], { x: M + 0.4, y: 5.6, w: W - 2 * M - 0.8, h: 0.95, fontFace: FONT, margin: 0, valign: "middle", lineSpacingMultiple: 1.35 });
 s.addNotes("8\u5468\u4e94\u9636\u6bb5:\u539f\u578b\u2192\u68c0\u7d22\u843d\u5730\u2192\u524d\u7aef+\u63d2\u4ef6\u5316\u2192\u8c03\u4f18\u6587\u6863\u2192\u7b54\u8fa9\u3002");
 
