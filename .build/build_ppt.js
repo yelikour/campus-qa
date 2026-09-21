@@ -9,7 +9,7 @@ const BG = "F7F8FC", CARD = "FFFFFF";
 const PRIMARY = "3B5BFD", PRIMARY_SOFT = "E9EDFF", PURPLE = "7C4DFF";
 const ACCENT = "FF8A3D", ACCENT_SOFT = "FFF1E5";
 const TEXT = "1C2333", MUTED = "6A7390", LINE = "E3E7F2";
-const FONT = "PingFang SC";
+const FONT = "Microsoft YaHei";  // 跨平台:Windows/Office 标配,避免异机字体替换导致溢出(macOS 无雅黑时由渲染端替换,布局已留余量)
 
 const ROOT = "/Users/yaya/SHU/2601/\u8f6f\u4ef6\u4f53\u7cfb\u7ed3\u6784/campus-qa";
 const ASSETS = `${ROOT}/docs/assets`;
@@ -276,6 +276,7 @@ s.addChart(p.charts.BAR, [
   chartColors: ["A8B5E8", PRIMARY],
   chartArea: { fill: { color: "FFFFFF" }, roundedCorners: true },
   catAxisLabelColor: MUTED, valAxisLabelColor: MUTED, catAxisLabelFontSize: 9.5, valAxisLabelFontSize: 10,
+  catAxisLabelFontFace: FONT, valAxisLabelFontFace: FONT, dataLabelFontFace: FONT, legendFontFace: FONT,
   valAxisMaxVal: 100, valGridLine: { color: LINE, size: 0.5 }, catGridLine: { style: "none" },
   showValue: true, dataLabelPosition: "outEnd", dataLabelColor: TEXT, dataLabelFontSize: 9.5,
   showLegend: true, legendPos: "b", legendColor: MUTED, legendFontSize: 11,

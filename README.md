@@ -24,7 +24,7 @@ campus-qa/
 │   ├── 智问校园CampusMind架构设计文档.docx/.pdf   # 交付物一(22 页,含追踪矩阵章)
 │   ├── traceability.md    # 需求→质量属性→ADR→模块→测试→证据 追踪矩阵
 │   └── assets/            # 分层架构 / RAG 时序 / 部署演进图
-├── ppt/智问校园CampusMind答辩PPT.pptx              # 交付物二(18 页,含讲者备注)
+├── ppt/智问校园CampusMind答辩PPT.pptx              # 交付物二(18 页,含讲者备注;字体微软雅黑,Windows/Office 跨平台标配)
 ├── video/
 │   ├── demo_frontend_v2.webm                 # 前端演示录屏(60s,含引擎信息与热更新闭环)
 │   ├── 智问校园CampusMind答辩讲解视频.mp4      # 完整讲解视频(约 14:42,18 页+演示+TTS)
