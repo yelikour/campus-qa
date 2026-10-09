@@ -381,9 +381,9 @@ s.addNotes("每一步替换(SQLite→PG、内存索引→Milvus、本地→GLM�
 
 /* ============ 17 经济适用 Ⅰ 售卖模式 ============ */
 s = p.addSlide();
-page(s, 17, 21, "经济适用 Ⅰ：三种售卖模式", "定价为商业假设示例（非承诺）· 底气来自近零边际成本的结构");
+page(s, 17, 21, "经济适用 Ⅰ：三种售卖模式", "定价为商业假设示例（非承诺）· 全按真实收费价核算，不依赖任何免费活动");
 const biz = [
-  ["SaaS 订阅（推荐起步）", "¥4,999 /校/年", "我方托管：1 台轻量服务器 + 免费档模型；零运维、含升级与维保；按年续费，先试用后签约", PRIMARY],
+  ["SaaS 订阅（推荐起步）", "¥4,999 /校/年", "我方托管：1 台轻量服务器 + 按量 API；零运维、含升级与维保；先试用后签约", PRIMARY],
   ["私有化部署买断", "¥29,999 买断 + 15%/年维保", "部署进校园内网，数据不出校；复用校内已有虚拟机；一次性实施 + 年度维保合同", PURPLE],
   ["免费社区版", "¥0（获客入口）", "本项目形态直接可用：本地抽取式生成零 API 成本；高校先零成本试用，再转付费版", ACCENT],
 ];
@@ -395,19 +395,19 @@ biz.forEach(([t, price, d, c], i) => {
   s.addText(d, { x: x + 0.28, y: 2.82, w: 3.35, h: 1.4, fontSize: 11.5, color: MUTED, fontFace: FONT, margin: 0, lineSpacingMultiple: 1.3 });
 });
 card(s, M, 4.72, W - 2 * M, 1.95, DEEP);
-s.addText("为什么敢定低价 —— 成本结构拆解", { x: M + 0.4, y: 4.94, w: 6.0, h: 0.4, fontSize: 14, bold: true, color: ACCENT, fontFace: FONT, margin: 0 });
+s.addText("为什么敢定低价 —— 不依赖任何免费政策", { x: M + 0.4, y: 4.94, w: 7.0, h: 0.4, fontSize: 14, bold: true, color: ACCENT, fontFace: FONT, margin: 0 });
 s.addText([
-  { text: "默认链路 0 GPU、0 强制 API 费：", options: { bold: true, color: "FFFFFF", fontSize: 13 } },
-  { text: "GLM-4-Flash 限时免费 + 本地抽取式兜底（无 Key 也完整服务）；单实例实测 44 QPS 足以承载全校日问量。边际成本近零 —— 低价仍可保毛利，这正是「经济适用型架构」的商业回报。", options: { color: "C9D2F5", fontSize: 13 } },
+  { text: "全按真实收费价核算：", options: { bold: true, color: "FFFFFF", fontSize: 13 } },
+  { text: "保守价 ¥1/百万 token、日均 5,000 问，API 费 ≈¥195/月，月总成本 ≈¥210–230 —— 对 ¥4,999/年定价仍有 ≈45% 毛利；本地抽取式兜底内置零成本（无 Key 也完整服务），成本有硬上限。这正是「经济适用型架构」的商业回报。", options: { color: "C9D2F5", fontSize: 13 } },
 ], { x: M + 0.4, y: 5.4, w: W - 2 * M - 0.8, h: 1.1, fontFace: FONT, margin: 0, valign: "top", lineSpacingMultiple: 1.35 });
-s.addNotes("售卖模式三档:SaaS订阅、私有化买断、免费社区版。强调:定价是商业假设示例,真实依据是下一页的成本账单——默认链路无GPU无强制API费,边际成本近零。");
+s.addNotes("售卖模式三档:SaaS订阅、私有化买断、免费社区版。强调:定价是商业假设示例,且全按真实收费价核算——保守价下月成本约210-230元仍有约45%毛利,本地抽取式兜底给成本硬上限。");
 
 /* ============ 18 经济适用 Ⅱ 成本核算 ============ */
 s = p.addSlide();
 page(s, 18, 21, "经济适用 Ⅱ：成本核算（月账单）", "价格时点 2026-10 · 多为新用户活动价 · 以官方计费页为准（如实标注）");
 const costRows = [
   ["部署方案", "服务器", "大模型", "月成本估算"],
-  ["A 云端 SaaS（我方托管）", "轻量 2C4G：¥165–379/年 ≈ ¥14–32/月", "GLM-4-Flash 限时免费 · embedding-3 重建 ≈¥0.01/次", "≈ ¥15–35"],
+  ["A 云端 SaaS（我方托管）", "轻量 2C4G：¥165–379/年 ≈ ¥14–32/月", "GLM 按量计费（保守 ¥1/百万 token，5,000 问/日 ≈¥195/月）· embedding-3 ≈¥0.01/次", "≈ ¥210–230"],
   ["B 私有化 CPU（校内已有虚机）", "复用校内资源，边际成本 ¥0", "客户自备 Key，或本地抽取式 ¥0", "边际 ≈ ¥0"],
   ["C 全离线 GPU（数据最敏感）", "RTX 4090 租用 ¥1,000–1,500/月，或买断 ¥15,000", "本地量化模型（GLM/Qwen 7B AWQ · vLLM）", "≈ ¥1,000–1,500"],
 ];
@@ -421,11 +421,11 @@ s.addTable(costRows.map((r, i) => r.map((c, j) => ({
   border: { pt: 0.5, color: LINE }, fontFace: FONT, rowH: 0.6, margin: 0.07,
 });
 card(s, M, 4.35, 6.05, 2.3, "FFFFFF");
-s.addText("每问调用成本（敏感性测算）", { x: M + 0.3, y: 4.55, w: 5.4, h: 0.4, fontSize: 13.5, bold: true, color: PRIMARY, fontFace: FONT, margin: 0 });
+s.addText("每问调用成本（真实收费价三档）", { x: M + 0.3, y: 4.55, w: 5.4, h: 0.4, fontSize: 13.5, bold: true, color: PRIMARY, fontFace: FONT, margin: 0 });
 s.addText([
-  { text: "实测每问 ≈ 1.3k token（系统提示 60 字 + 3 段上下文 + 回答）。\n", options: { color: TEXT, fontSize: 11.5 } },
-  { text: "Flash 免费期：¥0/问；", options: { color: TEXT, fontSize: 11.5 } },
-  { text: "若按 ¥1/百万 token 计费：每问 ¥0.0013 · 日均 5,000 问 ≈ ¥195/月。", options: { color: MUTED, fontSize: 11.5 } },
+  { text: "每问 ≈ 1.3k token（系统提示 + 3 段上下文 + 回答）。日均 5,000 问：\n", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "Flash 历史挂牌价 ¥0.06–0.1/百万 ≈ ¥12–20/月；", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "保守档 ¥1/百万 ≈ ¥195/月（方案基准）；上限 ¥5/百万 ≈ ¥975/月。现行免费活动未计入。", options: { color: MUTED, fontSize: 11.5 } },
 ], { x: M + 0.3, y: 5.0, w: 5.5, h: 1.5, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 4, lineSpacingMultiple: 1.3 });
 card(s, M + 6.35, 4.35, 5.88, 2.3, "FFFFFF");
 s.addText("Embedding 向量成本", { x: M + 6.65, y: 4.55, w: 5.3, h: 0.4, fontSize: 13.5, bold: true, color: PURPLE, fontFace: FONT, margin: 0 });
@@ -433,7 +433,7 @@ s.addText([
   { text: "62 条知识全量重建 ≈ 2 万 token ≈ ¥0.01（embedding-3 约 0.5 元/百万 token 档）。\n", options: { color: TEXT, fontSize: 11.5 } },
   { text: "仅在知识库变更时发生，相对服务器租金可忽略不计。", options: { color: MUTED, fontSize: 11.5 } },
 ], { x: M + 6.65, y: 5.0, w: 5.3, h: 1.5, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 4, lineSpacingMultiple: 1.3 });
-s.addNotes("三种方案的月账单:云端SaaS约15-35元/月,私有化复用已有虚机边际为0,全离线GPU约1000-1500元/月。每问API成本给出敏感性:免费期0元,收费假设下日均5000问约195元/月。价格均为2026-10活动价,如实标注。");
+s.addNotes("三种方案月账单(全按真实收费价):云端SaaS约210-230元/月(服务器+保守档API),私有化复用已有虚机边际为0,全离线GPU约1000-1500元/月。每问API三档:Flash历史挂牌价约12-20元/月,保守档1元/百万token约195元/月,上限975元/月;现行免费活动未计入。服务器为2026-10活动价,如实标注。");
 
 /* ============ 19 经济适用 Ⅲ 高并发与反向代理 ============ */
 s = p.addSlide();
