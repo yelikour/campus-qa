@@ -69,21 +69,22 @@ s.addNotes("\u5f00\u573a:\u5927\u5bb6\u597d,\u6211\u4eec\u7684\u8bfe\u7a0b\u9879
 
 /* ============ 2 提纲 ============ */
 s = p.addSlide();
-page(s, 2, 16, "\u6c47\u62a5\u63d0\u7eb2", "\u4ece\u95ee\u9898\u5230\u67b6\u6784\u518d\u5230\u9a8c\u8bc1\uff0c\u56db\u4e2a\u73af\u8282\u5c55\u5f00");
+page(s, 2, 21, "汇报提纲", "从问题到架构再到验证与经济性，五个环节展开");
 const outline = [
-  ["01", "\u80cc\u666f\u4e0e\u9700\u6c42", "\u75db\u70b9\u8c03\u7814 \u00b7 \u8d28\u91cf\u5c5e\u6027\u573a\u666f \u00b7 \u7ea6\u675f\u6761\u4ef6"],
-  ["02", "\u67b6\u6784\u8bbe\u8ba1", "\u4e94\u5c42\u5206\u5c42 \u00b7 RAG \u6838\u5fc3\u94fe\u8def \u00b7 6 \u9879\u5173\u952e\u51b3\u7b56 ADR"],
-  ["03", "\u5b9e\u73b0\u4e0e\u9a8c\u8bc1", "\u53ef\u8fd0\u884c\u7cfb\u7edf \u00b7 \u68c0\u7d22\u8bc4\u6d4b \u00b7 \u6027\u80fd\u538b\u6d4b \u00b7 \u6f14\u793a\u5f55\u5c4f"],
-  ["04", "\u6f14\u8fdb\u4e0e\u603b\u7ed3", "\u5355\u673a\u2192\u751f\u4ea7\u6f14\u8fdb \u00b7 8 \u5468\u8ba1\u5212 \u00b7 \u521b\u65b0\u70b9"],
+  ["01", "背景与需求", "痛点调研 · 质量属性场景 · 约束条件"],
+  ["02", "架构设计", "五层分层 · RAG 核心链路 · 6 项关键决策 ADR"],
+  ["03", "实现与验证", "可运行系统 · 检索评测 · 性能压测 · 演示录屏"],
+  ["04", "经济适用型", "售卖模式 · 部署与调用成本核算 · 高并发与反向代理"],
+  ["05", "演进与总结", "单机→生产演进 · 8 周计划 · 创新点"],
 ];
 outline.forEach(([num, t, d], i) => {
-  const y = 1.62 + i * 1.32;
-  card(s, M, y, W - 2 * M, 1.1);
-  s.addText(num, { x: M + 0.35, y: y + 0.14, w: 1.0, h: 0.82, fontSize: 34, bold: true, color: i % 2 ? PURPLE : PRIMARY, fontFace: FONT, margin: 0 });
-  s.addText(t, { x: M + 1.5, y: y + 0.16, w: 3.6, h: 0.5, fontSize: 19, bold: true, color: TEXT, fontFace: FONT, margin: 0 });
-  s.addText(d, { x: M + 1.5, y: y + 0.62, w: 9.5, h: 0.36, fontSize: 12.5, color: MUTED, fontFace: FONT, margin: 0 });
+  const y = 1.42 + i * 1.08;
+  card(s, M, y, W - 2 * M, 0.92);
+  s.addText(num, { x: M + 0.35, y: y + 0.1, w: 1.0, h: 0.7, fontSize: 27, bold: true, color: i % 2 ? PURPLE : PRIMARY, fontFace: FONT, margin: 0 });
+  s.addText(t, { x: M + 1.5, y: y + 0.1, w: 3.6, h: 0.44, fontSize: 17, bold: true, color: TEXT, fontFace: FONT, margin: 0 });
+  s.addText(d, { x: M + 1.5, y: y + 0.54, w: 10.2, h: 0.32, fontSize: 11.5, color: MUTED, fontFace: FONT, margin: 0 });
 });
-s.addNotes("\u56db\u4e2a\u73af\u8282:\u80cc\u666f\u9700\u6c42\u3001\u67b6\u6784\u8bbe\u8ba1\u3001\u5b9e\u73b0\u9a8c\u8bc1\u3001\u6f14\u8fdb\u603b\u7ed3\u3002");
+s.addNotes("五个环节:背景需求、架构设计、实现验证、经济适用型、演进总结。经济适用型回答三个问题:系统怎么卖、真实成本多少、怎么扛并发。");
 
 /* ============ 3 背景与痛点 ============ */
 s = p.addSlide();
@@ -376,11 +377,86 @@ s.addNotes("\u4e09\u9053\u9632\u7ebf:\u9650\u6d41\u9632\u6d41\u91cf,\u964d\u7ea7
 s = p.addSlide();
 page(s, 16, 18, "\u90e8\u7f72\u6f14\u8fdb\uff1a\u63a5\u53e3\u4e0d\u53d8\uff0c\u7ec4\u4ef6\u53ef\u66ff\u6362", "\u5355\u673a\u6f14\u793a \u2192 \u751f\u4ea7\u96c6\u7fa4\u7684\u5e73\u6ed1\u6f14\u8fdb\u8def\u5f84");
 s.addImage({ path: `${ASSETS}/arch_deploy.png`, x: 0.85, y: 1.5, w: 11.6, h: 5.35 });
-s.addNotes("\u6bcf\u4e00\u6b65\u66ff\u6362(SQLite\u2192PG\u3001\u5185\u5b58\u7d22\u5f15\u2192Milvus\u3001\u672c\u5730\u2192GLM\u3001\u4ee3\u7806\u2192Redis)\u90fd\u662f\u4e00\u4e2a\u53ef\u5355\u72ec\u8bc4\u5206\u7684\u67b6\u6784\u51b3\u7b56\u3002");
+s.addNotes("每一步替换(SQLite→PG、内存索引→Milvus、本地→GLM、代理→Redis)都是一个可单独评分的架构决策。");
 
-/* ============ 15 8 周计划 ============ */
+/* ============ 17 经济适用 Ⅰ 售卖模式 ============ */
 s = p.addSlide();
-page(s, 17, 18, "8 \u5468\u8fed\u4ee3\u8ba1\u5212\u4e0e\u56e2\u961f\u5206\u5de5", "\u67b6\u6784\u5e08\u7275\u5934 \u00b7 \u524d\u540e\u7aef\u4e0e\u6570\u636e\u8fd0\u8425\u5e76\u884c \u00b7 \u6d4b\u8bd5\u8d2f\u7a7f\u5168\u7a0b");
+page(s, 17, 21, "经济适用 Ⅰ：三种售卖模式", "定价为商业假设示例（非承诺）· 底气来自近零边际成本的结构");
+const biz = [
+  ["SaaS 订阅（推荐起步）", "¥4,999 /校/年", "我方托管：1 台轻量服务器 + 免费档模型；零运维、含升级与维保；按年续费，先试用后签约", PRIMARY],
+  ["私有化部署买断", "¥29,999 买断 + 15%/年维保", "部署进校园内网，数据不出校；复用校内已有虚拟机；一次性实施 + 年度维保合同", PURPLE],
+  ["免费社区版", "¥0（获客入口）", "本项目形态直接可用：本地抽取式生成零 API 成本；高校先零成本试用，再转付费版", ACCENT],
+];
+biz.forEach(([t, price, d, c], i) => {
+  const x = M + i * 4.18;
+  card(s, x, 1.5, 3.9, 2.9);
+  s.addText(t, { x: x + 0.28, y: 1.74, w: 3.35, h: 0.44, fontSize: 15.5, bold: true, color: TEXT, fontFace: FONT, margin: 0 });
+  s.addText(price, { x: x + 0.28, y: 2.22, w: 3.35, h: 0.5, fontSize: 20, bold: true, color: c, fontFace: FONT, margin: 0 });
+  s.addText(d, { x: x + 0.28, y: 2.82, w: 3.35, h: 1.4, fontSize: 11.5, color: MUTED, fontFace: FONT, margin: 0, lineSpacingMultiple: 1.3 });
+});
+card(s, M, 4.72, W - 2 * M, 1.95, DEEP);
+s.addText("为什么敢定低价 —— 成本结构拆解", { x: M + 0.4, y: 4.94, w: 6.0, h: 0.4, fontSize: 14, bold: true, color: ACCENT, fontFace: FONT, margin: 0 });
+s.addText([
+  { text: "默认链路 0 GPU、0 强制 API 费：", options: { bold: true, color: "FFFFFF", fontSize: 13 } },
+  { text: "GLM-4-Flash 限时免费 + 本地抽取式兜底（无 Key 也完整服务）；单实例实测 44 QPS 足以承载全校日问量。边际成本近零 —— 低价仍可保毛利，这正是「经济适用型架构」的商业回报。", options: { color: "C9D2F5", fontSize: 13 } },
+], { x: M + 0.4, y: 5.4, w: W - 2 * M - 0.8, h: 1.1, fontFace: FONT, margin: 0, valign: "top", lineSpacingMultiple: 1.35 });
+s.addNotes("售卖模式三档:SaaS订阅、私有化买断、免费社区版。强调:定价是商业假设示例,真实依据是下一页的成本账单——默认链路无GPU无强制API费,边际成本近零。");
+
+/* ============ 18 经济适用 Ⅱ 成本核算 ============ */
+s = p.addSlide();
+page(s, 18, 21, "经济适用 Ⅱ：成本核算（月账单）", "价格时点 2026-10 · 多为新用户活动价 · 以官方计费页为准（如实标注）");
+const costRows = [
+  ["部署方案", "服务器", "大模型", "月成本估算"],
+  ["A 云端 SaaS（我方托管）", "轻量 2C4G：¥165–379/年 ≈ ¥14–32/月", "GLM-4-Flash 限时免费 · embedding-3 重建 ≈¥0.01/次", "≈ ¥15–35"],
+  ["B 私有化 CPU（校内已有虚机）", "复用校内资源，边际成本 ¥0", "客户自备 Key，或本地抽取式 ¥0", "边际 ≈ ¥0"],
+  ["C 全离线 GPU（数据最敏感）", "RTX 4090 租用 ¥1,000–1,500/月，或买断 ¥15,000", "本地量化模型（GLM/Qwen 7B AWQ · vLLM）", "≈ ¥1,000–1,500"],
+];
+s.addTable(costRows.map((r, i) => r.map((c, j) => ({
+  text: c,
+  options: i === 0
+    ? { bold: true, color: "FFFFFF", fill: { color: PRIMARY }, fontSize: 12.5, valign: "middle" }
+    : { color: j === 0 ? PRIMARY : TEXT, bold: j === 0 || j === 3, fill: { color: i % 2 ? "F2F4FB" : "FFFFFF" }, fontSize: 11.5, valign: "middle" },
+}))), {
+  x: M, y: 1.55, w: W - 2 * M, colW: [3.3, 3.6, 3.7, 1.63],
+  border: { pt: 0.5, color: LINE }, fontFace: FONT, rowH: 0.6, margin: 0.07,
+});
+card(s, M, 4.35, 6.05, 2.3, "FFFFFF");
+s.addText("每问调用成本（敏感性测算）", { x: M + 0.3, y: 4.55, w: 5.4, h: 0.4, fontSize: 13.5, bold: true, color: PRIMARY, fontFace: FONT, margin: 0 });
+s.addText([
+  { text: "实测每问 ≈ 1.3k token（系统提示 60 字 + 3 段上下文 + 回答）。\n", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "Flash 免费期：¥0/问；", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "若按 ¥1/百万 token 计费：每问 ¥0.0013 · 日均 5,000 问 ≈ ¥195/月。", options: { color: MUTED, fontSize: 11.5 } },
+], { x: M + 0.3, y: 5.0, w: 5.5, h: 1.5, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 4, lineSpacingMultiple: 1.3 });
+card(s, M + 6.35, 4.35, 5.88, 2.3, "FFFFFF");
+s.addText("Embedding 向量成本", { x: M + 6.65, y: 4.55, w: 5.3, h: 0.4, fontSize: 13.5, bold: true, color: PURPLE, fontFace: FONT, margin: 0 });
+s.addText([
+  { text: "62 条知识全量重建 ≈ 2 万 token ≈ ¥0.01（embedding-3 约 0.5 元/百万 token 档）。\n", options: { color: TEXT, fontSize: 11.5 } },
+  { text: "仅在知识库变更时发生，相对服务器租金可忽略不计。", options: { color: MUTED, fontSize: 11.5 } },
+], { x: M + 6.65, y: 5.0, w: 5.3, h: 1.5, fontFace: FONT, margin: 0, valign: "top", paraSpaceAfter: 4, lineSpacingMultiple: 1.3 });
+s.addNotes("三种方案的月账单:云端SaaS约15-35元/月,私有化复用已有虚机边际为0,全离线GPU约1000-1500元/月。每问API成本给出敏感性:免费期0元,收费假设下日均5000问约195元/月。价格均为2026-10活动价,如实标注。");
+
+/* ============ 19 经济适用 Ⅲ 高并发与反向代理 ============ */
+s = p.addSlide();
+page(s, 19, 21, "经济适用 Ⅲ：高并发与反向代理", "实测容量 → 容量规划 → 生产拓扑：扩展单位小、成本线性可预测");
+const scaleCards = [
+  ["容量外推（基于实测）", ["单实例 E2E 44.1 QPS · 0 失败（bench 实测）", "万名学生 · 日均 5,000 问 · 峰值系数 5× → 峰值 < 3 QPS", "单实例余量 10× 以上；千级 QPS ≈ 25 实例线性达标"], PRIMARY],
+  ["扩展三级（应用无状态）", ["① uvicorn --workers 4：同机 ≈ 2–3× 吞吐", "② Nginx 反代 → 多实例负载均衡，水平扩容", "③ 限流/会话外置 Redis —— 与部署演进页四项替换一致"], PURPLE],
+  ["反向代理要点（Nginx）", ["proxy_buffering off —— SSE 流式直通不缓冲", "proxy_read_timeout ≥ 60s · 静态资源 Nginx 直出 · TLS 终止", "limit_req + 应用令牌桶：双层限流抗突发"], ACCENT],
+];
+scaleCards.forEach(([t, items, c], i) => {
+  const x = M + i * 4.18;
+  card(s, x, 1.5, 3.9, 3.15);
+  s.addText(t, { x: x + 0.28, y: 1.72, w: 3.35, h: 0.42, fontSize: 14.5, bold: true, color: c, fontFace: FONT, margin: 0 });
+  bullets(s, items, { x: x + 0.28, y: 2.25, w: 3.4, h: 2.2, fontSize: 11 });
+});
+card(s, M, 4.95, W - 2 * M, 1.7, DEEP);
+s.addText("成本可预测性：经济适用型的架构回报", { x: M + 0.4, y: 5.15, w: 7.0, h: 0.4, fontSize: 14, bold: true, color: ACCENT, fontFace: FONT, margin: 0 });
+s.addText("扩容单位 = 一台 ≈¥30/月的轻量服务器：容量与成本线性挂钩，从 1 台到 25 台没有雪崩式成本跃迁；无状态设计让「加机器」成为唯一的扩容动作，运维复杂度不随规模爆炸。", { x: M + 0.4, y: 5.6, w: W - 2 * M - 0.8, h: 0.95, fontSize: 12.5, color: "C9D2F5", fontFace: FONT, margin: 0, lineSpacingMultiple: 1.35 });
+s.addNotes("高并发三件事:容量外推(44QPS单实例对校园场景余量10倍)、扩展三级(workers→反代多实例→Redis外置)、反代要点(SSE直通proxy_buffering off最关键)。收在成本可预测性:扩容单位是30元/月的机器,线性扩容。");
+
+/* ============ 20 8 周计划 ============ */
+s = p.addSlide();
+page(s, 20, 21, "8 周迭代计划与团队分工", "架构师牵头 · 前后端与数据运营并行 · 测试贯穿全程");
 const plan = [
   ["W1\u2013W2", "\u8c03\u7814+\u9700\u6c42+\u67b6\u6784\u539f\u578b", "\u8d28\u91cf\u5c5e\u6027\u573a\u666f\u00b7\u5206\u5c42\u56fe"],
   ["W3\u2013W4", "\u77e5\u8bc6\u5e93+\u6df7\u5408\u68c0\u7d22\u843d\u5730", "\u53cc\u901a\u9053\u53ec\u56de\u00b7RRF"],
@@ -394,9 +470,9 @@ plan.forEach(([w, t, d], i) => {
   const x = px0 + i * step;
   s.addShape(p.shapes.OVAL, { x: x - 0.31, y: py, w: 0.62, h: 0.62, fill: { color: i === 4 ? ACCENT : PRIMARY }, line: { color: "FFFFFF", width: 2 }, shadow: sh() });
   s.addText(w.replace("W", ""), { x: x - 0.31, y: py, w: 0.62, h: 0.62, fontSize: 13, bold: true, color: "FFFFFF", fontFace: FONT, align: "center", valign: "middle", margin: 0 });
-  s.addText(w, { x: x - 0.9, y: py + 0.75, w: 1.8, h: 0.35, fontSize: 12, bold: true, color: i === 4 ? ACCENT : PRIMARY, fontFace: FONT, align: "center", margin: 0 });
-  s.addText(t, { x: x - 1.13, y: py + 1.12, w: 2.26, h: 0.72, fontSize: 12.5, bold: true, color: TEXT, fontFace: FONT, align: "center", margin: 0, lineSpacingMultiple: 1.15 });
-  s.addText(d, { x: x - 1.13, y: py + 1.88, w: 2.26, h: 0.6, fontSize: 10.5, color: MUTED, fontFace: FONT, align: "center", margin: 0, lineSpacingMultiple: 1.2 });
+  s.addText(w, { x: Math.max(M, x - 0.9), y: py + 0.75, w: 1.8, h: 0.35, fontSize: 12, bold: true, color: i === 4 ? ACCENT : PRIMARY, fontFace: FONT, align: "center", margin: 0 });
+  s.addText(t, { x: Math.max(M, x - 1.13), y: py + 1.12, w: 2.26, h: 0.72, fontSize: 12.5, bold: true, color: TEXT, fontFace: FONT, align: "center", margin: 0, lineSpacingMultiple: 1.15 });
+  s.addText(d, { x: Math.max(M, x - 1.13), y: py + 1.88, w: 2.26, h: 0.6, fontSize: 10.5, color: MUTED, fontFace: FONT, align: "center", margin: 0, lineSpacingMultiple: 1.2 });
 });
 card(s, M, 5.35, W - 2 * M, 1.45, DEEP);
 s.addText([
@@ -423,7 +499,7 @@ sum.forEach(([t, d], i) => {
   s.addText(t, { x: x + 0.3, y: y + 0.18, w: 4.9, h: 0.42, fontSize: 16, bold: true, color: "AFBCF0", fontFace: FONT, margin: 0 });
   s.addText(d, { x: x + 0.3, y: y + 0.62, w: 4.9, h: 0.75, fontSize: 11.5, color: "C9D2F5", fontFace: FONT, margin: 0, lineSpacingMultiple: 1.25 });
 });
-s.addText("\u4e0b\u4e00\u6b65\uff1a\u8bed\u4e49\u5411\u91cf + Cross-Encoder \u91cd\u6392 \u00b7 \u7edf\u4e00\u8eab\u4efd\u8ba4\u8bc1 \u00b7 \u77e5\u8bc6\u6e90\u81ea\u52a8\u91c7\u96c6 \u00b7 \u6301\u7eed\u8bc4\u6d4b", { x: 1.2, y: 5.6, w: W - 2.4, h: 0.4, fontSize: 13.5, color: "8B97C9", fontFace: FONT, align: "center", margin: 0 });
+s.addText("下一步：语义向量 + Cross-Encoder 重排 · 统一身份认证 · 知识源自动采集 · SaaS 多租户与持续评测", { x: 1.2, y: 5.6, w: W - 2.4, h: 0.4, fontSize: 13.5, color: "8B97C9", fontFace: FONT, align: "center", margin: 0 });
 s.addText("\u6b22\u8fce\u63d0\u95ee \u00b7 \u8c22\u8c22\uff01", { x: 1.2, y: 6.25, w: W - 2.4, h: 0.75, fontSize: 30, bold: true, color: "FFFFFF", fontFace: FONT, align: "center", margin: 0 });
 s.addNotes("\u56db\u4e2a\u521b\u65b0\u70b9\u6536\u5c3e,\u9884\u7559\u63d0\u95ee\u65f6\u95f4\u3002");
 

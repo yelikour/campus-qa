@@ -1,6 +1,6 @@
 # 智问校园 CampusMind —— 校园智能问答系统(AI + RAG)
 
-《软件体系结构》课程项目 · 2026 春季学期 · 3 人团队（王若璀 · 何俐 · 郭祖梁） · 8 周交付
+《软件体系结构》课程项目 · 2026 春季学期 · 3 人团队（王若璋 · 何俐 · 郭祚梁） · 8 周交付
 
 面向在校学生的校园事务智能问答系统:自然语言提问 → **混合检索**(BM25 ∥ 向量)→ **RRF 融合** → **重排序** → **流式生成**(SSE)→ **引用溯源**。所有回答均标注校内知识来源,无命中时诚实回退、不编造。
 
@@ -22,12 +22,13 @@ campus-qa/
 │   └── gen_diagrams.py   # 架构图生成
 ├── docs/
 │   ├── 智问校园CampusMind架构设计文档.docx/.pdf   # 交付物一(22 页,含追踪矩阵章)
+│   ├── 智问校园CampusMind经济适用型与运营方案.docx/.pdf  # 售卖模式/成本核算/高并发/反向代理(2026-10 增补)
 │   ├── traceability.md    # 需求→质量属性→ADR→模块→测试→证据 追踪矩阵
 │   └── assets/            # 分层架构 / RAG 时序 / 部署演进图
-├── ppt/智问校园CampusMind答辩PPT.pptx              # 交付物二(18 页,含讲者备注;字体微软雅黑,Windows/Office 跨平台标配)
+├── ppt/智问校园CampusMind答辩PPT.pptx              # 交付物二(21 页,含经济适用型三页与讲者备注;字体微软雅黑,Windows/Office 跨平台标配)
 ├── video/
 │   ├── demo_frontend_v2.webm                 # 前端演示录屏(60s,含引擎信息与热更新闭环)
-│   ├── 智问校园CampusMind答辩讲解视频.mp4      # 完整讲解视频(约 14:42,18 页+演示+TTS)
+│   ├── 智问校园CampusMind答辩讲解视频.mp4      # 完整讲解视频(16:14,21 页+演示+TTS)
 │   └── narration.py / build_video.sh          # 旁白文案与合成脚本(TTS: macOS Tingting)
 └── .build/             # 文档/幻灯片构建脚本(generate_doc.js / build_ppt.js)
 ```
@@ -47,8 +48,8 @@ cd backend && ../.venv/bin/python -m uvicorn app.main:app --port 8000
 
 ```bash
 .venv/bin/python scripts/eval_matrix.py      # 四路:BM25 / Vector(TF-IDF) / Hybrid+RRF / Hybrid+Rerank
-.venv/bin/python scripts/bench.py retrieval  # 217.8 QPS, p95 8.7ms
-.venv/bin/python scripts/bench.py e2e        # 42.0 QPS(含生成), p99 683ms, 0 失败
+.venv/bin/python scripts/bench.py retrieval  # 251.4 QPS, p95 7.0ms
+.venv/bin/python scripts/bench.py e2e        # 44.1 QPS(含生成), p99 611ms, 0 失败
 .venv/bin/python scripts/acceptance.py       # 四项验收 4/4 PASS
 ```
 
@@ -85,5 +86,16 @@ A1 生成降级(无效 Key 流内回退)· A2 入口限流(并发 15 → 200×10
 - **可观察检索**:引用卡片与调试接口暴露双通道排名与融合分数;前端显示引擎信息与索引版本。
 - **默认链路 Hybrid+RRF**:轻量 Reranker 实测无收益,降级为可配置实验开关(RERANK_ENABLED,默认 0),RRF 路径内置无知识硬零兜底与文档级去重。
 - **安全三防线**:令牌桶限流 · 生成端熔断降级 · 强制引用溯源 + 全有或全无兜底门槛。
+
+## 经济适用型与运营(2026-10 增补)
+
+围绕「怎么卖、成本多少、怎么扛并发」三个问题给出可查证的答案(完整测算见《经济适用型与运营方案》):
+
+- **售卖三档**:SaaS 订阅(¥4,999/校/年,定价假设示例)· 私有化买断(数据不出校,复用校内虚机)· 免费社区版(本项目形态,零 API 成本获客)。
+- **月账单**:云端托管 ≈¥15–35/月(2C4G 轻量服务器 + GLM-4-Flash 限时免费);私有化边际 ≈¥0;全离线 GPU ≈¥1,000–1,500/月(仅数据最敏感场景)。每问 ≈1.3k token(代码估算):免费期 ¥0;收费假设(¥1/百万 token)下日均 5,000 问 ≈¥195/月。
+- **高并发**:单实例 E2E 44.1 QPS(0 失败)对万人在校场景余量 10×+;扩展三级(uvicorn workers → Nginx 反代多实例 → 限流外置 Redis),扩容单位 ≈¥30/月/台,容量-成本线性挂钩。
+- **反向代理要点**:Nginx `proxy_buffering off` 保 SSE 直通、`proxy_read_timeout ≥ 60s`、静态资源直出、TLS 终止、limit_req + 应用令牌桶双层限流。
+
+口径如实:外部价格为 2026-10 查询的公开活动价(标注波动与续费风险,以官方页面为准);商业定价为假设示例,非承诺。
 
 详见《架构设计文档》第 4–11 章。
