@@ -31,25 +31,29 @@ def report(name, lat_ms, fails, wall_s):
 
 def bench_retrieval(n=300):
     sys.path.insert(0, "backend")
+    from app.config import settings
     from app.services import ingestion
     from app.services.retrieval import retriever
     ingestion.startup()
+    # 口径:与生产一致走 RERANK_ENABLED 决定的链路(默认 RRF;此前误固定
+    # rerank=True 测的是重排实验路径,与本基准宣称的"默认链路"不符)
+    rerank = settings.RERANK_ENABLED
     for i in range(10):  # 预热(jieba/字典/缓存)
-        retriever.retrieve(QUERIES[i % len(QUERIES)])
+        retriever.retrieve(QUERIES[i % len(QUERIES)], rerank=rerank)
     lat, fails = [], 0
     t0 = time.perf_counter()
     for i in range(n):
         q = QUERIES[i % len(QUERIES)]
         s = time.perf_counter()
         try:
-            r = retriever.retrieve(q)
+            r = retriever.retrieve(q, rerank=rerank)
             if not r:
                 fails += 1  # 视为空结果(链路完成,非崩溃)
         except Exception:
             fails += 1
         lat.append((time.perf_counter() - s) * 1000)
     wall = time.perf_counter() - t0
-    report(f"retrieval-only x{n}", lat, fails, wall)
+    report(f"retrieval-only x{n}{'(rerank)' if rerank else '(RRF)'}", lat, fails, wall)
 
 async def bench_e2e(base, n=200, concurrency=20):
     import httpx

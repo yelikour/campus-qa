@@ -66,7 +66,13 @@ class BM25Index:
         self.doc_len = [len(t) for t in self.doc_tokens]
         self.avgdl = sum(self.doc_len) / max(1, len(self.doc_len))
         self.df: dict[str, int] = {}
-        for tokens in self.doc_tokens:
+        # 倒排索引:词 → {文档下标: 词频}。查询只访问命中词的倒排链,
+        # 免去逐文档全量扫描(等价性由 tests/test_improvements.py 对暴力实现校验)
+        self.inv: dict[str, dict[int, int]] = {}
+        for i, tokens in enumerate(self.doc_tokens):
+            for w in tokens:
+                postings = self.inv.setdefault(w, {})
+                postings[i] = postings.get(i, 0) + 1
             for w in set(tokens):
                 self.df[w] = self.df.get(w, 0) + 1
         self.N = len(chunks)
@@ -78,14 +84,13 @@ class BM25Index:
         q = tokenize(query)
         scores: dict[int, float] = {}
         for w in q:
-            if w not in self.df:
+            postings = self.inv.get(w)
+            if not postings:
                 continue
-            for i, tokens in enumerate(self.doc_tokens):
-                tf = tokens.count(w)
-                if tf == 0:
-                    continue
+            idf = self.idf(w)
+            for i, tf in postings.items():
                 denom = tf + self.k1 * (1 - self.b + self.b * self.doc_len[i] / self.avgdl)
-                scores[i] = scores.get(i, 0.0) + self.idf(w) * tf * (self.k1 + 1) / denom
+                scores[i] = scores.get(i, 0.0) + idf * tf * (self.k1 + 1) / denom
         ranked = sorted(scores.items(), key=lambda x: -x[1])[:top_k]
         return ranked
 
@@ -299,19 +304,27 @@ class HybridRetriever:
         self.version += 1
 
     def fuse_rrf(self, query: str, candidate_k: int | None = None) -> list[tuple[int, float, dict[int, int]]]:
-        """双通道并行检索 + RRF 融合(不含重排)。供编排与评测共用。"""
+        """双通道并行检索 + RRF 融合(不含重排)。供编排与评测共用。
+
+        标准公式:score(d) = Σ_channel 1 / (RRF_K + rank),对排名而非原始分数
+        融合,免归一化。早期实现误用常数 1/(RRF_K+1)(与排名无关,等价于
+        通道计数),在 TF-IDF 演示语料上指标恰好持平,但接入真实语义向量后
+        双通道分歧增大,会系统性偏好"双通道都命中但排名靠后"的文档,已修正;
+        62 条评测复测 Hit@1/Hit@3 不变,MRR 0.884→0.882(一名次内波动)。
+        """
         candidate_k = candidate_k or settings.CHUNK_TOP_K * 2
         bm25_hits = self.bm25.search(query, candidate_k) if self.bm25 else []
         vec_hits = self.vector.search(query, candidate_k) if self.vector else []
         rrf: dict[int, float] = {}
-        for i, _ in bm25_hits:
-            rrf[i] = rrf.get(i, 0.0) + 1.0 / (settings.RRF_K + 1)
-        for i, _ in vec_hits:
-            rrf[i] = rrf.get(i, 0.0) + 1.0 / (settings.RRF_K + 1)
-        ranks = {i: {"bm25": r + 1, "vec": r + 1} for r, (i, _) in enumerate(bm25_hits)}
-        vec_ranks = {i: r + 1 for r, (i, _) in enumerate(vec_hits)}
-        for i, r in vec_ranks.items():
-            ranks.setdefault(i, {})["vec"] = r
+        for r, (i, _) in enumerate(bm25_hits):
+            rrf[i] = rrf.get(i, 0.0) + 1.0 / (settings.RRF_K + r + 1)
+        for r, (i, _) in enumerate(vec_hits):
+            rrf[i] = rrf.get(i, 0.0) + 1.0 / (settings.RRF_K + r + 1)
+        # 双通道排名表:仅记录真实命中通道,未命中通道不写键(vec_rank=None),
+        # 保证引用卡片与调试接口暴露的观测数据不失真
+        ranks: dict[int, dict[str, int]] = {i: {"bm25": r + 1} for r, (i, _) in enumerate(bm25_hits)}
+        for r, (i, _) in enumerate(vec_hits):
+            ranks.setdefault(i, {})["vec"] = r + 1
         fused = sorted(rrf.items(), key=lambda x: -x[1])
         return [(i, s, ranks.get(i, {})) for i, s in fused]
 

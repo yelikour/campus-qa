@@ -95,7 +95,7 @@ function finishAnswer(bubble, answer, meta, done) {
       <div class="sources-head">📎 引用来源 · 混合检索命中 ${meta.sources.length} 条
         <span style="margin-left:auto">检索耗时 ${meta.retrieval_ms}ms</span></div>
       <div class="src-list">${meta.sources.map((s) => `
-        <span class="src-chip">📄 ${s.title}
+        <span class="src-chip">📄 ${escapeHtml(s.title)}
           <span class="ranks">BM25#${s.bm25_rank ?? "-"} · VEC#${s.vec_rank ?? "-"} · ${(s.score * 100).toFixed(0)}%</span>
         </span>`).join("")}
       </div>
@@ -143,7 +143,8 @@ async function openConversation(cid) {
   const msgs = await resp.json();
   const box = document.getElementById("messages");
   box.innerHTML = "";
-  for (const m of msgs) appendMsg(m.role, m.content);
+  // 历史回放统一转义:回答内容可能来自知识库文本,不可直接作为 HTML 注入
+  for (const m of msgs) appendMsg(m.role, m.role === "user" ? m.content : escapeHtml(m.content));
   box.scrollTop = box.scrollHeight;
 }
 
@@ -187,9 +188,22 @@ async function submitKnowledge() {
     source: document.getElementById("formSrc").value.trim() || "管理员录入",
   }];
   if (!body[0].question || !body[0].answer) { showToast("请填写问法与答案", true); return; }
+  const adminHeaders = { "Content-Type": "application/json" };
+  const adminToken = localStorage.getItem("adminToken");
+  if (adminToken) adminHeaders["X-Admin-Token"] = adminToken;
   const resp = await fetch(API + "/api/knowledge", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    method: "POST", headers: adminHeaders, body: JSON.stringify(body),
   });
+  if (resp.status === 401) {
+    // 服务端启用了 ADMIN_TOKEN 鉴权:提示录入管理令牌后重试
+    const token = prompt("该服务已启用管理鉴权,请输入管理令牌(X-Admin-Token):");
+    if (token) {
+      localStorage.setItem("adminToken", token);
+      return submitKnowledge();
+    }
+    showToast("未提供管理令牌,已取消录入", true);
+    return;
+  }
   const r = await resp.json();
   if (r.added) {
     showToast(`✅ 已新增 ${r.added} 条,索引热重建:当前 ${r.total_chunks} chunks(v${r.index_version})`);
@@ -228,7 +242,7 @@ async function loadDash() {
   const max = Math.max(1, ...cats.map(([, v]) => v));
   document.getElementById("dashBars").innerHTML = cats.length
     ? cats.map(([c, v]) => `
-      <div class="bar-row"><span>${c}</span>
+      <div class="bar-row"><span>${escapeHtml(c)}</span>
         <div class="bar-track"><div class="bar-fill" style="width:${(v / max) * 100}%"></div></div>
         <span>${v}</span></div>`).join("")
     : '<p style="font-size:13px;color:var(--ink-2)">暂无数据,去提几个问题吧</p>';

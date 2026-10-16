@@ -58,6 +58,24 @@
 | **Hybrid+RRF(生产默认)** | **80.6%** | **98.4%** | **0.884** |
 | Hybrid+Rerank(可选实验开关,默认关) | 74.2% | 90.3% | 0.815 |
 
+## 六、2026-10-16 完善轮(二轮调研加固,详见 IMPROVEMENTS.md)
+
+独立代码调研发现并修复 9 项缺陷,全部带验证证据;完整报告见 [IMPROVEMENTS.md](IMPROVEMENTS.md)。
+
+| 编号 | 缺陷 | 影响 | 修复 | 验证 |
+|---|---|---|---|---|
+| F1 | `fuse_rrf` 用常数 1/(RRF_K+1),与排名无关,非标准 RRF | 设计-实现不一致;接入真语义向量后双通道分歧大时系统性偏好"双通道都命中但排名靠后"的文档 | 改为 `Σ 1/(k+rank)` | test_rrf_uses_rank_based_formula;62 条复测 Hit@1/Hit@3 不变、MRR 0.884→0.882、Rerank 路径 74.2/90.3→77.4/96.8 |
+| F2 | bm25-only chunk 的 vec_rank 伪造为 bm25 排名 | 引用卡片/调试接口观测数据失真,与"可观察检索"承诺矛盾 | 排名表仅记录真实命中通道 | test_vec_rank_absent_when_only_bm25_hits |
+| F3 | 前端三处未转义输出(来源标题/看板分类/历史回放) | 存储型 XSS(与 F4 组成未授权注入链) | 全量 escapeHtml | 代码审查 + escapeHtml 覆盖路径确认 |
+| F4 | 知识库写接口(POST/DELETE)无鉴权 | 任何人可增删知识库,污染检索与引用 | 可选 ADMIN_TOKEN + X-Admin-Token 门禁;演示模式保持开放(验收脚本兼容) | test_admin_token_gates_knowledge_writes / test_admin_token_unset_keeps_demo_open |
+| F5 | 令牌桶字典按用户 token 无界增长 | 伪造海量 token 可耗尽内存 | 上限 10,000 + 最久未活跃淘汰一半 | test_token_bucket_eviction |
+| F6 | BM25 查询逐文档全量扫描 O(词数×N×文档长) | 语料增长后检索吞吐坍缩(20× 语料实测 68 QPS) | 倒排索引 + 预计算词频 | test_bm25_inverted_index_equivalent_to_bruteforce(逐位等价);A/B:10×(当前语料)/35×(20× 语料) |
+| F7 | 云端生成降级静默吞异常 | 故障不可归因(频率/超时/网络/鉴权无法区分) | 降级原因落日志 | test_zhipu_fallback_logs_reason |
+| F8 | 知识删除在 ingestion 文件锁外读写 JSON | 与新增并发时读写竞态,可能丢更新或索引-文件不一致 | remove_document 并入统一锁;文件单次读取 | test_remove_document_semantics |
+| F9 | bench.py retrieval 基准误测重排路径(retrieve 默认 rerank=True) | "默认 Hybrid+RRF 链路"吞吐被系统性低估,与宣称口径不符 | `retrieve(q, rerank=RERANK_ENABLED)`,输出标签标注实际链路 | 修正后同机实测 RRF 路径 515.8–880.4 QPS / p50 1.1–1.9ms(vs 重排路径 ~33 QPS) |
+
+完善轮复测:pytest 13/13(新增 9 项)、eval_matrix 四路指标见 §五上方 2026-10-16 复测表(REPRODUCIBILITY.md §3)、acceptance 4/4 PASS、E2E 43.3 QPS / 0 失败(Win/x64)。
+
 结论(如实表述):在当前 62 条校园事务评测集上,BM25 对关键词密集型规章问题表现最好;TF-IDF 向量补充了另一种检索视角,但并未稳定超过 BM25;轻量词面 Reranker 实测无收益,因此保持 Provider 化设计并默认关闭(RERANK_ENABLED=1 可开启),计划替换为 Cross-Encoder 后再次评估。
 
 口径说明:早期 RRF 评测存在"同文档双通道 chunk 重复占位"失真(旧值 95.2/0.863);FINAL 轮补齐 RRF 生产链路文档级去重后,四路统一口径实测 98.4/0.884,以本表为准。调优过程中修复的三个真实缺陷:停用词表构造 bug(整串未 split)、RRF 候选池截断、输出缺少文档级去重(初版生产链路 Hit@3 82.3% → 修复后 Rerank 路径 90.3%)。

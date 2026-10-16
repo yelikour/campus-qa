@@ -99,8 +99,10 @@ class ZhipuGenerator(GeneratorProvider):
                         delta = json.loads(data)["choices"][0].get("delta", {})
                         if content := delta.get("content"):
                             yield content
-        except Exception:
-            # 熔断降级:云端不可用时回退本地抽取式生成,保证可用性
+        except Exception as e:
+            # 熔断降级:云端不可用时回退本地抽取式生成,保证可用性;
+            # 降级原因落日志,故障可归因(频率/超时/网络/鉴权各有处置)
+            print(f"[generation] 云端 GLM 不可用,降级本地抽取式:{type(e).__name__}: {e}")
             async for piece in LocalExtractiveGenerator().stream(query, contexts):
                 yield piece
 

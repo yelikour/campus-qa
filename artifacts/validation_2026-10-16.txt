@@ -1,0 +1,30 @@
+===== CampusMind 完善轮验证(2026-10-16)=====
+Date: 2026-10-16 08:40:32
+Host: Windows 11 x64 / Python 3.12.10
+
+--- [1] pytest ---
+13 passed, 1 warning in 7.91s
+
+--- [2] 检索评测矩阵(n=62)---
+评测集:62 条 | 索引:136 chunks | 向量通道:local-tfidf(非语义嵌入,见材料说明)
+BM25-only        Hit@1=80.6%  Hit@3=98.4%  MRR=0.884
+Vector-only      Hit@1=75.8%  Hit@3=93.5%  MRR=0.844
+Hybrid+RRF       Hit@1=80.6%  Hit@3=98.4%  MRR=0.882
+Hybrid+Rerank    Hit@1=77.4%  Hit@3=96.8%  MRR=0.860
+Hybrid+Rerank 未命中样例(供归因):
+
+--- [3] retrieval-only 基准(修正口径:跟随 RERANK_ENABLED)---
+[retrieval-only x300(RRF)] 请求 300 | 失败 0 | 总耗时 0.58s | 吞吐 515.8 QPS | p50 1.9ms | p95 3.2ms | p99 3.7ms
+
+--- [4] 架构验收 ---
+PASS  A1 生成降级(云端无效 Key → 本地抽取式)  provider=zhipu-glm 降级产出 139 字,内容含正解关键信息
+PASS  A4 无知识兜底(不编造,回退引导话术)  sources=0 条,回答含回退话术=True
+PASS  A3 知识热更新(录入即检索,验收后清理)  版本 5→6→7,即时命中=True,即时回答=True,清理=True
+PASS  A2 入口限流(令牌桶 5QPS/突发10)  并发 15:200x10 / 429x5(超出桶容量的请求被拒)
+验收结果:4/4 PASS
+
+--- [5] E2E 基准(并发20)---
+[local-extractive E2E x200(并发20)] 请求 200 | 失败 0 | 总耗时 4.75s | 吞吐 42.1 QPS | p50 425.0ms | p95 647.4ms | p99 727.1ms
+
+--- [6] 默认路由 ---
+{"total_queries":644,"hit_rate":1.0,"avg_latency_ms":375.8,"conversations":649,"top_categories":{"卡务网络":120,"图书馆":82,"奖助学金":81,"教务选课":78,"毕业事项":42,"宿舍生活":42,"食堂餐饮":39,"校园服务":39},"index_version":7,"chunk_count":136,"llm_provider":"local","embedding_provider":"local-tfidf","rerank_enabled":false}

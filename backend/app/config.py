@@ -30,6 +30,11 @@ class Settings:
     RATE_LIMIT_QPS = float(os.getenv("RATE_LIMIT_QPS", "5"))
     RATE_LIMIT_BURST = int(os.getenv("RATE_LIMIT_BURST", "10"))
 
+    # 知识库写接口鉴权(POST/DELETE /api/knowledge):
+    # 未设置 = 演示开放模式(课程演示/验收脚本免 Key);
+    # 设置后 = 强制校验请求头 X-Admin-Token,防未授权增删知识库(前端管理页会提示输入)
+    ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+
     # LLM 生成:可插拔 Provider
     # local  = 内置抽取式生成器(离线可跑,用于演示与降级)
     # zhipu  = 智谱 GLM(openai 兼容协议,需 ZHIPUAI_API_KEY)

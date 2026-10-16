@@ -43,29 +43,54 @@ def _to_chunks(docs: list[dict]) -> list[KnowledgeChunk]:
     return chunks
 
 
-def rebuild_index(docs: list[dict] | None = None) -> int:
-    docs = docs if docs is not None else _load_seed()
+def _save_seed(docs: list[dict]) -> None:
+    with open(settings.SEED_QA_PATH, "w", encoding="utf-8") as f:
+        json.dump(docs, f, ensure_ascii=False, indent=1)
+
+
+def _rebuild(docs: list[dict]) -> int:
+    """重建索引(调用方须已持有 _lock,rebuild_index/add/remove 统一串行化)。"""
     chunks = _to_chunks(docs)
-    with _lock:
-        retriever.build(chunks)
+    retriever.build(chunks)
     return len(chunks)
 
 
+def rebuild_index(docs: list[dict] | None = None) -> int:
+    docs = docs if docs is not None else _load_seed()
+    with _lock:
+        return _rebuild(docs)
+
+
 def add_documents(entries: list[dict]) -> tuple[int, list[str]]:
-    docs = _load_seed()
-    base = max((int(d["id"].split("-")[-1]) for d in docs), default=0) if docs else 0
-    new_ids = []
-    for i, e in enumerate(entries, start=base + 1):
-        e.setdefault("id", f"kb-{i:03d}")
-        e.setdefault("category", "其他")
-        e.setdefault("tags", [])
-        e.setdefault("source", "管理员录入")
-        e.setdefault("updated_at", time.strftime("%Y-%m-%d"))
-        new_ids.append(e["id"])
-        docs.append(e)
-    with open(settings.SEED_QA_PATH, "w", encoding="utf-8") as f:
-        json.dump(docs, f, ensure_ascii=False, indent=1)
-    return rebuild_index(docs), new_ids
+    with _lock:
+        docs = _load_seed()
+        base = max((int(d["id"].split("-")[-1]) for d in docs), default=0) if docs else 0
+        new_ids = []
+        for i, e in enumerate(entries, start=base + 1):
+            e.setdefault("id", f"kb-{i:03d}")
+            e.setdefault("category", "其他")
+            e.setdefault("tags", [])
+            e.setdefault("source", "管理员录入")
+            e.setdefault("updated_at", time.strftime("%Y-%m-%d"))
+            new_ids.append(e["id"])
+            docs.append(e)
+        _save_seed(docs)
+        n = _rebuild(docs)
+    return n, new_ids
+
+
+def remove_document(doc_id: str) -> int:
+    """删除知识条目并热重建索引(与新增共用同一把文件锁,消除读写竞态)。
+
+    不存在时抛 KeyError,由 API 层转 404。
+    """
+    with _lock:
+        docs = _load_seed()
+        rest = [d for d in docs if d["id"] != doc_id]
+        if len(rest) == len(docs):
+            raise KeyError(doc_id)
+        _save_seed(rest)
+        return _rebuild(rest)
 
 
 def startup() -> int:

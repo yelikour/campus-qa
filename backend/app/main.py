@@ -16,6 +16,9 @@ from .api import chat, knowledge, conversations, admin
 async def lifespan(app: FastAPI):
     db.init_schema()
     ingestion.startup()
+    if not settings.ADMIN_TOKEN:
+        print("[startup] 提示:未设置 ADMIN_TOKEN,知识库写接口为演示开放模式;"
+              "生产部署请设置该环境变量以启用 X-Admin-Token 鉴权")
     yield
 
 

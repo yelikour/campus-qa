@@ -1,12 +1,17 @@
-"""知识库管理接口:列表 / 检索 / 新增(触发热更新重建索引)。"""
+"""知识库管理接口:列表 / 检索 / 新增 / 删除(触发热更新重建索引)。
+
+写接口(新增/删除)受 ADMIN_TOKEN 鉴权保护:未设置该环境变量时为演示
+开放模式;设置后须携带 X-Admin-Token 请求头(见 core/security.require_admin)。
+"""
 from __future__ import annotations
 
-import json
+import time
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from ..config import settings
+from ..core.security import require_admin
 from ..repository import db
 from ..services import ingestion
 from ..services.retrieval import retriever
@@ -25,19 +30,21 @@ class KnowledgeItem(BaseModel):
 @router.get("")
 def list_knowledge(page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=50),
                    category: str | None = None, q: str | None = None):
-    docs = json.load(open(settings.SEED_QA_PATH, encoding="utf-8"))
+    docs = ingestion._load_seed()
+    categories = sorted({d["category"] for d in docs})
     if category:
         docs = [d for d in docs if d["category"] == category]
     if q:
         docs = [d for d in docs if q.lower() in d["question"].lower() or q in d["answer"]]
-    categories = sorted({d["category"] for d in json.load(open(settings.SEED_QA_PATH, encoding="utf-8"))})
     total = len(docs)
     return {"total": total, "page": page, "categories": categories,
             "items": docs[(page - 1) * size: page * size]}
 
 
 @router.post("")
-def add_knowledge(items: list[KnowledgeItem]):
+def add_knowledge(items: list[KnowledgeItem],
+                  x_admin_token: str | None = Header(default=None)):
+    require_admin(x_admin_token)
     if not items:
         raise HTTPException(400, "条目不能为空")
     entries = [i.model_dump() for i in items]
@@ -46,21 +53,20 @@ def add_knowledge(items: list[KnowledgeItem]):
 
 
 @router.delete("/{doc_id}")
-def delete_knowledge(doc_id: str):
-    docs = json.load(open(settings.SEED_QA_PATH, encoding="utf-8"))
-    rest = [d for d in docs if d["id"] != doc_id]
-    if len(rest) == len(docs):
+def delete_knowledge(doc_id: str, x_admin_token: str | None = Header(default=None)):
+    require_admin(x_admin_token)
+    try:
+        chunks = ingestion.remove_document(doc_id)
+    except KeyError:
         raise HTTPException(404, f"条目 {doc_id} 不存在")
-    json.dump(rest, open(settings.SEED_QA_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    chunks = ingestion.rebuild_index(rest)
     return {"deleted": doc_id, "total_chunks": chunks, "index_version": retriever.version}
 
 
 @router.get("/search")
 def search_knowledge(q: str = Query(min_length=1), top_k: int = 5):
-    t0 = __import__("time").perf_counter()
+    t0 = time.perf_counter()
     results = retriever.retrieve(q, top_k=top_k, rerank=settings.RERANK_ENABLED)
-    ms = (__import__("time").perf_counter() - t0) * 1000
+    ms = (time.perf_counter() - t0) * 1000
     return {"query": q, "elapsed_ms": round(ms, 1), "results": [
         {"doc_id": r.chunk.doc_id, "text": r.chunk.text, "category": r.chunk.category,
          "score": r.score, "bm25_rank": r.bm25_rank, "vec_rank": r.vec_rank} for r in results]}
