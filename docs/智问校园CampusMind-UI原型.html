@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智问校园 CampusMind · UI 原型(高保真)</title>
+<style>
+  /* ============ 设计规范(与 frontend/style.css 同源) ============ */
+  :root{
+    --bg:#f4f6fb; --panel:#ffffff; --ink:#1c2333; --ink-2:#5a6478;
+    --brand:#3b5bfd; --brand-2:#7c4dff; --accent:#eef1ff; --line:#e5e9f2;
+    --ok:#12b76a; --warn:#d94f3d; --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Microsoft YaHei",system-ui,sans-serif;background:#e9edf5;color:var(--ink)}
+
+  /* ============ 原型工具条 ============ */
+  .proto-bar{position:sticky;top:0;z-index:99;display:flex;align-items:center;gap:14px;
+    background:#1c2333;color:#fff;padding:10px 18px;font-size:13px}
+  .proto-bar b{font-size:15px}
+  .proto-bar .tag{background:#3b5bfd;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600}
+  .proto-bar .note{color:#a8b0c6}
+  .proto-bar button{margin-left:auto;border:1px solid #454f6b;background:transparent;color:#dbe2f5;
+    border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px}
+  .proto-bar button.on{background:#3b5bfd;border-color:#3b5bfd;color:#fff}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:18px}
+  .frame{border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(28,35,51,.12);background:var(--bg)}
+
+  /* ============ 应用布局(复刻) ============ */
+  .app{display:flex;height:660px;font-size:14px}
+  .sidebar{width:220px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 12px;gap:10px}
+  .brand{display:flex;gap:10px;align-items:center}
+  .brand-logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .brand-name{font-weight:700;font-size:15px}
+  .brand-sub{font-size:11px;color:var(--ink-2)}
+  .btn-new{border:1px dashed #b9c6ee;color:var(--brand);background:var(--accent);border-radius:10px;
+    padding:9px;font-size:13px;cursor:pointer;font-weight:600}
+  .views{display:flex;flex-direction:column;gap:6px}
+  .view-tab{border:none;background:transparent;text-align:left;padding:10px 12px;border-radius:10px;
+    font-size:13.5px;color:var(--ink-2);cursor:pointer}
+  .view-tab.active{background:var(--accent);color:var(--brand);font-weight:700}
+  .history-head{font-size:11px;color:#98a1b6;margin-top:8px;padding-left:8px}
+  .history{flex:1;overflow:auto}
+  .hist-item{padding:9px 10px;border-radius:9px;font-size:12.5px;color:var(--ink-2);cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+  .hist-item.active{background:var(--accent);color:var(--brand);font-weight:600}
+  .sidebar-foot{font-size:11px;color:#98a1b6;text-align:center;padding-top:8px;border-top:1px solid var(--line)}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 24px 12px}
+  .topbar h1{font-size:19px}
+  .topbar-sub{font-size:12px;color:var(--ink-2);margin-top:3px}
+  .topbar-status{font-size:12px;color:var(--ink-2);text-align:right}
+  .topbar-status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:4px}
+  .topbar-status b{color:var(--brand-2)}
+
+  /* 聊天 */
+  .messages{flex:1;overflow:auto;padding:6px 24px}
+  .hero{text-align:center;padding:56px 30px}
+  .hero-icon{font-size:40px}
+  .hero h2{margin:10px 0 8px;font-size:22px}
+  .hero p{color:var(--ink-2);font-size:13px;line-height:1.7}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+  .chips button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 16px;
+    font-size:12.5px;color:var(--ink);cursor:pointer;transition:.15s}
+  .chips button:hover{border-color:var(--brand);color:var(--brand)}
+  .msg{display:flex;gap:10px;margin:14px 0;align-items:flex-start}
+  .msg .avatar{width:34px;height:34px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .msg.user .avatar{background:#dfe6fb;color:var(--brand)}
+  .msg.bot .avatar{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;font-size:16px}
+  .bubble{background:#fff;border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:12px 14px;
+    max-width:76%;line-height:1.75;font-size:13.5px;box-shadow:0 4px 14px rgba(28,35,51,.05)}
+  .msg.user .bubble{background:var(--brand);color:#fff;border:none;border-radius:14px 4px 14px 14px}
+  .cursor{display:inline-block;width:8px;height:15px;background:var(--brand);vertical-align:-2px;
+    animation:blink .8s infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+  .sources{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .sources-head{display:flex;font-size:11.5px;color:var(--ink-2);gap:6px;align-items:center}
+  .src-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .src-chip{background:var(--accent);border-radius:8px;padding:4px 9px;font-size:11.5px;color:var(--ink)}
+  .src-chip .ranks{color:var(--brand);font-size:10.5px}
+  .meta-line{font-size:11px;color:#98a1b6;margin-top:6px}
+  .composer{padding:12px 24px 16px}
+  .composer-box{display:flex;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 16px;align-items:center}
+  .composer-box input{flex:1;border:none;outline:none;font-size:13.5px}
+  .btn-send{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;
+    border-radius:9px;padding:9px 22px;font-size:13px;cursor:pointer}
+  .composer-tip{font-size:11px;color:#98a1b6;text-align:center;margin-top:8px}
+
+  /* 知识库 */
+  .kb-body{flex:1;overflow:auto;padding:4px 24px 20px}
+  .kb-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+  .kb-toolbar select,.kb-toolbar input{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12.5px;outline:none}
+  .kb-toolbar input{flex:1}
+  .btn-mini{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;cursor:pointer}
+  .btn-mini.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .kb-form{background:var(--accent);border:1px solid #d8defb;border-radius:12px;padding:14px;display:grid;gap:8px;margin-bottom:14px}
+  .kb-form input,.kb-form textarea{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:inherit}
+  .kb-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .kb-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kb-card .cat{font-size:10.5px;color:var(--brand);background:var(--accent);border-radius:6px;padding:2px 8px}
+  .kb-card .q{font-weight:700;font-size:13px;margin:8px 0 6px}
+  .kb-card .a{font-size:11.5px;color:var(--ink-2);line-height:1.6;max-height:52px;overflow:hidden}
+  .kb-card .src{font-size:10.5px;color:#98a1b6;margin-top:8px}
+  .kb-pager{display:flex;justify-content:center;gap:12px;margin-top:16px;font-size:12px;color:var(--ink-2);align-items:center}
+
+  /* 看板 */
+  .dash-body{flex:1;overflow:auto;padding:4px 24px 20px;display:grid;gap:14px;align-content:start}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .stat-card .label{font-size:11.5px;color:var(--ink-2)}
+  .stat-card .value{font-size:24px;font-weight:800;margin-top:4px}
+  .stat-card .value small{font-size:12px;color:var(--ink-2);font-weight:400}
+  .chart-card,.arch-note{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  .chart-card h3,.arch-note h3{font-size:13px;margin-bottom:10px}
+  .bar-row{display:flex;align-items:center;gap:10px;font-size:12px;margin:7px 0}
+  .bar-row span:first-child{width:76px;text-align:right;color:var(--ink-2)}
+  .bar-track{flex:1;height:9px;background:var(--accent);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));border-radius:6px}
+  .arch-note p{font-size:12.5px;color:var(--ink-2);line-height:1.8}
+  .arch-note b{color:var(--brand)}
+
+  .hidden{display:none!important}
+
+  /* ============ 标注模式 ============ */
+  .hot{position:absolute;z-index:50;width:22px;height:22px;border-radius:50%;background:var(--warn);color:#fff;
+    font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;
+    box-shadow:0 0 0 3px rgba(217,79,61,.25);cursor:pointer;top:0;left:0}
+  body.annot .hot{display:flex}
+  .rel{position:relative}
+  .anno-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:16px 0}
+  .anno-panel h3{font-size:14px;margin-bottom:10px}
+  .anno-panel ol{margin-left:20px;line-height:2;font-size:13px;color:var(--ink)}
+  .anno-panel b{color:var(--brand)}
+
+  /* ============ 状态与流程 ============ */
+  .sec-title{margin:26px 0 12px;font-size:16px;font-weight:700}
+  .sec-title small{font-weight:400;color:var(--ink-2);font-size:12.5px;margin-left:10px}
+  .states{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .state-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:12.5px}
+  .state-card h4{font-size:12.5px;margin-bottom:8px}
+  .state-card .mock{border-radius:9px;padding:9px 11px;font-size:12px;line-height:1.6}
+  .state-card .desc{color:var(--ink-2);font-size:11.5px;margin-top:8px;line-height:1.6}
+  .mock.warn{background:#fdf1ef;color:#a33b2c;border:1px solid #f5d5cf}
+  .mock.fallback{background:#f6f8fc;color:var(--ink-2);border:1px dashed #c8d0e2}
+  .mock.auth{background:var(--accent);color:var(--brand);border:1px solid #d8defb}
+  .mock.engine{background:#f3effe;color:#5b3fbf;border:1px solid #e0d6f8}
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:16px;font-size:12.5px}
+  .flow .node{background:var(--accent);color:var(--brand);border-radius:9px;padding:8px 13px;font-weight:600}
+  .flow .arrow{color:#98a1b6}
+  .flow .state{border:1px dashed #c8d0e2;color:var(--ink-2);border-radius:9px;padding:8px 13px}
+  .spec{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:12.5px}
+  .spec-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.9}
+  .spec-card h4{font-size:12.5px;margin-bottom:6px}
+  .swatch{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:6px;border:1px solid rgba(0,0,0,.08)}
+  footer.proto-foot{color:#98a1b6;font-size:12px;text-align:center;padding:18px 0 26px}
+</style>
+</head>
+<body>
+
+<div class="proto-bar">
+  <b>智问校园 CampusMind · UI 原型</b>
+  <span class="tag">高保真 · v1.0</span>
+  <span class="note">与真实实现(frontend/)同构 · 本页为课程交付物,离线可用,数据为演示样例</span>
+  <button id="annoBtn" onclick="toggleAnno()">① 开启交互标注</button>
+</div>
+
+<div class="wrap">
+  <div class="frame"><div class="app">
+
+    <!-- 侧栏 -->
+    <aside class="sidebar">
+      <div class="brand rel">
+        <div class="brand-logo">智</div>
+        <div><div class="brand-name">智问校园</div><div class="brand-sub">CampusMind · AI+RAG</div></div>
+        <div class="hot" style="top:-8px;right:-8px" data-a="brand" onclick="jumpAnno('brand')">1</div>
+      </div>
+      <button class="btn-new">＋ 新的提问</button>
+      <nav class="views rel">
+        <button class="view-tab active" data-view="chat" onclick="switchView('chat')">💬 智能问答</button>
+        <button class="view-tab" data-view="kb" onclick="switchView('kb')">📚 知识库管理</button>
+        <button class="view-tab" data-view="dash" onclick="switchView('dash')">📊 运行看板</button>
+        <div class="hot" style="top:34px;right:2px" data-a="views" onclick="jumpAnno('views')">2</div>
+      </nav>
+      <div class="history-head">历史会话</div>
+      <div class="history">
+        <div class="hist-item active">图书馆开放时间是几点</div>
+        <div class="hist-item">校园卡挂失流程</div>
+        <div class="hist-item">奖学金申请条件</div>
+      </div>
+      <div class="sidebar-foot rel">RAG 引擎在线 · 向量 local-tfidf · 索引 v7
+        <div class="hot" style="bottom:-6px;right:-6px" data-a="badge" onclick="jumpAnno('badge')">3</div>
+      </div>
+    </aside>
+
+    <!-- 聊天视图 -->
+    <main class="main" id="view-chat">
+      <header class="topbar rel">
+        <div>
+          <h1>校园事务 · 智能问答</h1>
+          <p class="topbar-sub">基于 RAG(检索增强生成)· 混合检索 BM25+向量 · 回答附引用溯源</p>
+        </div>
+        <div class="topbar-status"><span class="dot"></span>知识库 <b>136</b> chunks 已索引 · <b>LLM:local · 索引 v7</b></div>
+        <div class="hot" style="top:8px;right:230px" data-a="engine" onclick="jumpAnno('engine')">4</div>
+      </header>
+      <section class="messages" id="messages">
+        <div class="hero" id="hero">
+          <div class="hero-icon">🎓</div>
+          <h2>你好,同学!</h2>
+          <p>我可以解答教务选课、图书馆、宿舍、卡务、奖助、就业等校园事务问题。<br>所有回答均来自校内知识库,并标注信息来源。</p>
+          <div class="chips rel" id="chips">
+            <button onclick="demoAsk('图书馆开放时间是几点?')">图书馆开放时间是几点?</button>
+            <button onclick="demoAsk('校园卡丢了怎么挂失?')">校园卡丢了怎么挂失?</button>
+            <button onclick="demoAsk('奖学金怎么申请?')">奖学金怎么申请?</button>
+            <button onclick="demoAsk('宿舍可以用电饭锅吗?')">宿舍可以用电饭锅吗?</button>
+            <button onclick="demoAsk('论文查重要求是多少?')">论文查重要求是多少?</button>
+            <div class="hot" style="top:-9px;left:-9px" data-a="chips" onclick="jumpAnno('chips')">5</div>
+          </div>
+        </div>
+      </section>
+      <footer class="composer rel">
+        <div class="composer-box">
+          <input id="input" placeholder="输入你的校园问题,回车发送…" autocomplete="off"
+                 onkeydown="if(event.key==='Enter')sendDemo()">
+          <button class="btn-send" onclick="sendDemo()">发送</button>
+          <div class="hot" style="top:-10px;right:-10px" data-a="composer" onclick="jumpAnno('composer')">6</div>
+        </div>
+        <div class="composer-tip">内容由 AI 基于校内知识库生成,仅供参考 · 请以学校官方通知为准</div>
+      </footer>
+    </main>
+
+    <!-- 知识库视图 -->
+    <main class="main hidden" id="view-kb">
+      <header class="topbar">
+        <div><h1>知识库管理</h1><p class="topbar-sub">新增条目即时重建双通道索引(热更新),无需重启服务</p></div>
+      </header>
+      <section class="kb-body">
+        <div class="kb-toolbar rel">
+          <select><option>全部分类</option><option>图书馆</option><option>教务选课</option><option>卡务网络</option></select>
+          <input placeholder="搜索知识条目…">
+          <button class="btn-mini">搜索</button>
+          <span style="font-size:12px;color:var(--ink-2)">共 59 条 · 12 个分类</span>
+          <button class="btn-mini primary" onclick="this.closest('.kb-body').querySelector('.kb-form').classList.toggle('hidden')">＋ 新增条目</button>
+          <div class="hot" style="top:-9px;right:-9px" data-a="kbtoolbar" onclick="jumpAnno('kbtoolbar')">7</div>
+        </div>
+        <div class="kb-form hidden">
+          <input placeholder="分类(如:教务选课)">
+          <input placeholder="标准问法,如:辅修专业如何报名?">
+          <textarea rows="2" placeholder="标准答案正文…"></textarea>
+          <input placeholder="信息来源(如:教务处管理办法)">
+          <button class="btn-mini primary" style="justify-self:start">提交并重建索引</button>
+        </div>
+        <div class="kb-list">
+          <div class="kb-card"><span class="cat">图书馆</span><div class="q">图书馆开放时间是几点?</div>
+            <div class="a">图书馆周一至周日 7:30-22:00 开放,考试月延长至 23:00。自习区全天开放,借阅服务时间 8:00-21:30…</div>
+            <div class="src">🗂 图书馆官网读者指南 · 2026-09</div></div>
+          <div class="kb-card"><span class="cat">卡务网络</span><div class="q">校园卡丢了怎么挂失?</div>
+            <div class="a">发现校园卡遗失后应立即通过「一卡通」App 或圈存机办理挂失,冻结账户资金;凭学生证到卡务中心补办…</div>
+            <div class="src">🗂 卡务中心服务指南 · 2026-08</div></div>
+          <div class="kb-card"><span class="cat">奖助学金</span><div class="q">奖学金怎么申请?</div>
+            <div class="a">国家奖学金每学年评审一次,需综合测评排名位于前 10% 且无挂科记录;院内奖学金按综测排名分配…</div>
+            <div class="src">🗂 学生资助管理中心办法 · 2026-09</div></div>
+        </div>
+        <div class="kb-pager"><button class="btn-mini">上一页</button><span>第 1 / 7 页</span><button class="btn-mini">下一页</button></div>
+        <div class="rel" style="height:0"><div class="hot" style="top:6px;left:6px" data-a="kbcards" onclick="jumpAnno('kbcards')">8</div></div>
+      </section>
+    </main>
+
+    <!-- 看板视图 -->
+    <main class="main hidden" id="view-dash">
+      <header class="topbar">
+        <div><h1>运行看板</h1><p class="topbar-sub">问答量 / 命中率 / 时延 / 热点分类 —— 支撑运营与容量规划</p></div>
+        <button class="btn-mini primary" onclick="loadDash()">刷新</button>
+      </header>
+      <section class="dash-body rel">
+        <div class="cards" id="dashCards">
+          <div class="stat-card"><div class="label">累计提问</div><div class="value">644 <small>次</small></div></div>
+          <div class="stat-card"><div class="label">知识命中率</div><div class="value">100.0<small>%</small></div></div>
+          <div class="stat-card"><div class="label">平均生成时延</div><div class="value">376 <small>ms</small></div></div>
+          <div class="stat-card"><div class="label">会话数 / 索引块</div><div class="value">649 / 136</div></div>
+        </div>
+        <div class="chart-card rel">
+          <h3>热点问题分类 Top</h3>
+          <div id="dashBars"></div>
+          <div class="hot" style="top:10px;right:10px" data-a="dash" onclick="jumpAnno('dash')">9</div>
+        </div>
+        <div class="arch-note">
+          <h3>RAG 链路</h3>
+          <p>问题 → <b>混合检索</b>(BM25 ∥ 向量)→ <b>RRF 融合</b> → <b>重排序</b>(实验开关)→ <b>流式生成</b>(SSE)→ 引用溯源</p>
+        </div>
+      </section>
+    </main>
+  </div></div>
+
+  <!-- ============ 交互标注说明 ============ -->
+  <div class="anno-panel" id="annoPanel">
+    <h3>② 交互标注说明(对应界面中的红色编号)</h3>
+    <ol>
+      <li id="a-brand"><b>品牌与产品名</b> —— 固定标识;侧栏底部实时显示引擎状态(向量 Provider 与索引版本,如实展示)。</li>
+      <li id="a-views"><b>三视图导航</b> —— 智能问答 / 知识库管理 / 运行看板,单页应用内切换,不刷新页面。</li>
+      <li id="a-badge"><b>引擎状态徽标</b> —— 「RAG 引擎在线 · 向量 local-tfidf · 索引 v7」:演示环境如实标注 TF-IDF 非语义嵌入。</li>
+      <li id="a-engine"><b>顶栏引擎信息</b> —— 知识库规模、当前 LLM 与索引版本;云端切换/降级时实时更新。</li>
+      <li id="a-chips"><b>快捷问题</b> —— 一键代填典型校园问题,降低首次使用门槛;点击后走完整问答流程。</li>
+      <li id="a-composer"><b>输入区</b> —— 回车或按钮发送;限流(429)时输入区上方出现提示气泡;流式回答期间发送按钮禁用。</li>
+      <li id="a-kbtoolbar"><b>知识库工具栏</b> —— 分类筛选 + 关键词搜索 + 新增表单(折叠);设置 ADMIN_TOKEN 后提交需管理令牌。</li>
+      <li id="a-kbcards"><b>知识卡片与热更新</b> —— 录入提交后提示「已新增 n 条,索引热重建 v+1」,新知识立即可被检索命中,无需重启。</li>
+      <li id="a-dash"><b>运行看板</b> —— 命中率/时延/热点分类实时聚合自查询日志;数字与数据库口径一致,可刷新。</li>
+    </ol>
+  </div>
+
+  <!-- ============ 状态设计 ============ -->
+  <div class="sec-title">③ 状态设计<small>四类关键系统状态在界面上的呈现(原型内为静态样例,真实实现见 frontend/app.js)</small></div>
+  <div class="states">
+    <div class="state-card"><h4>限流提示(429)</h4>
+      <div class="mock warn">⚠️ 触发限流保护,请稍后再试</div>
+      <div class="desc">单用户令牌桶 5 QPS/突发 10;超出即整条请求被拒,不打扰他人。</div></div>
+    <div class="state-card"><h4>无知识兜底</h4>
+      <div class="mock fallback">抱歉,知识库中暂未收录与您问题直接相关的信息。建议咨询对应职能部门,或换一种问法。</div>
+      <div class="desc">sources=0、不带引用;宁可说不知道,不编造。</div></div>
+    <div class="state-card"><h4>管理鉴权(可选)</h4>
+      <div class="mock auth">该服务已启用管理鉴权,请输入管理令牌(X-Admin-Token)</div>
+      <div class="desc">设置 ADMIN_TOKEN 后知识写接口返回 401,前端提示录入并记忆令牌。</div></div>
+    <div class="state-card"><h4>引擎降级如实显示</h4>
+      <div class="mock engine">引擎:local-extractive(云端不可用已降级)</div>
+      <div class="desc">云端 GLM 异常自动流内回退本地生成,顶栏与引用区同步更新引擎标识。</div></div>
+  </div>
+
+  <!-- ============ 页面流程 ============ -->
+  <div class="sec-title">④ 页面流程与导航关系</div>
+  <div class="flow">
+    <span class="node">进入应用</span><span class="arrow">→</span>
+    <span class="node">智能问答(默认)</span><span class="arrow">→</span>
+    <span class="node">提问 → 流式回答 + 引用卡片</span><span class="arrow">→</span>
+    <span class="state">无命中 → 兜底话术</span>
+    <span style="color:#98a1b6">|</span>
+    <span class="node">知识库管理</span><span class="arrow">→</span>
+    <span class="state">录入 → 索引热重建 v+1 → 即时可检索</span>
+    <span style="color:#98a1b6">|</span>
+    <span class="node">运行看板</span><span class="arrow">→</span>
+    <span class="state">命中率 / 时延 / 热点分类刷新</span>
+  </div>
+
+  <!-- ============ 设计规范 ============ -->
+  <div class="sec-title">⑤ 设计规范摘要<small>与真实实现 frontend/style.css 同源</small></div>
+  <div class="spec">
+    <div class="spec-card"><h4>色彩</h4>
+      <span class="swatch" style="background:#3b5bfd"></span>品牌靛蓝 #3B5BFD(主操作/强调)<br>
+      <span class="swatch" style="background:#7c4dff"></span>辅助紫 #7C4DFF(渐变与引擎信息)<br>
+      <span class="swatch" style="background:#12b76a"></span>成功绿 #12B76A(在线/命中)<br>
+      <span class="swatch" style="background:#1c2333"></span>墨色 #1C2333(正文)· <span class="swatch" style="background:#eef1ff"></span>浅底 #EEF1FF</div>
+    <div class="spec-card"><h4>字体与圆角</h4>
+      微软雅黑(Windows 标配);正文 13-14px,标题 19-22px;<br>卡片圆角 12-14px,胶囊 20px;阴影 0 4-6px 14-24px 低透明度。</div>
+    <div class="spec-card"><h4>组件清单</h4>
+      侧栏导航 / 历史会话列表 / 消息气泡(含打字机光标)/ 引用卡片(来源+双通道排名+分数)/ 快捷问题胶囊 / 知识卡 / 统计卡 / 分类条形图 / 表单与分页。</div>
+  </div>
+
+  <footer class="proto-foot">智问校园 CampusMind UI 原型 v1.0 · 《软件体系结构》课程项目 · 与 SRS(用户界面)/ 设计文档(第 7 章 前端设计)对应 · 真实实现见 frontend/</footer>
+</div>
+
+<script>
+  /* ---------------- 视图切换 ---------------- */
+  function switchView(v){
+    ["chat","kb","dash"].forEach(x=>{
+      document.getElementById("view-"+x).classList.toggle("hidden",x!==v);
+      document.querySelector('.view-tab[data-view="'+x+'"]').classList.toggle("active",x===v);
+    });
+  }
+
+  /* ---------------- 演示问答(模拟 SSE 流式) ---------------- */
+  var streaming=false;
+  function demoAsk(q){ ask(q); }
+  function sendDemo(){
+    var input=document.getElementById("input");
+    var t=input.value.trim(); if(!t||streaming) return; input.value=""; ask(t);
+  }
+  function ask(q){
+    if(streaming) return; streaming=true;
+    var hero=document.getElementById("hero"); if(hero) hero.remove();
+    var box=document.getElementById("messages");
+    box.insertAdjacentHTML("beforeend",
+      '<div class="msg user"><div class="avatar">同学</div><div class="bubble">'+esc(q)+'</div></div>'+
+      '<div class="msg bot"><div class="avatar">🎓</div><div class="bubble" id="ans"><span class="cursor"></span></div></div>');
+    box.scrollTop=box.scrollHeight;
+
+    var kb={
+      "图书馆开放时间是几点?":{text:"根据《图书馆官网读者指南》的相关规定:图书馆周一至周日 7:30-22:00 开放,考试月延长至 23:00。自习区全天开放,借阅服务时间为 8:00-21:30。",
+        sources:[["图书馆官网读者指南","BM25#1 · VEC#1 · 3%"],["图书馆空间预约系统说明","BM25#3 · VEC#4 · 3%"],["图书馆借阅规则","BM25#5 · VEC#3 · 3%"]],ms:454},
+      "校园卡丢了怎么挂失?":{text:"根据《卡务中心服务指南》的相关规定:发现校园卡遗失应立即通过一卡通 App 或圈存机办理挂失冻结账户,凭学生证至卡务中心补办,工本费 15 元。",
+        sources:[["卡务中心服务指南","BM25#1 · VEC#1 · 3%"],["校园卡充值说明","BM25#2 · VEC#5 · 2%"]],ms:447}
+    };
+    var hit=kb[q];
+    var ans=document.getElementById("ans");
+    if(!hit){
+      type("抱歉,知识库中暂未收录与您问题直接相关的信息。建议您咨询对应职能部门,或换一种问法(例如:『图书馆开放时间』、『校园卡挂失』)。",ans,function(){finish(ans,[],false);});
+      return;
+    }
+    type(hit.text,ans,function(){finish(ans,hit.sources,true,hit.ms);});
+  }
+  function type(text,el,done){
+    var i=0,step=2;
+    var timer=setInterval(function(){
+      i+=step;
+      el.innerHTML=esc(text.slice(0,i))+'<span class="cursor"></span>';
+      document.getElementById("messages").scrollTop=1e9;
+      if(i>=text.length){clearInterval(timer);done();}
+    },30);
+  }
+  function finish(ans,sources,hasHit,ms){
+    var html=esc(ans.textContent);
+    if(sources&&sources.length){
+      html+='<div class="sources"><div class="sources-head">📎 引用来源 · 混合检索命中 '+sources.length+' 条 <span style="margin-left:auto">检索耗时 3.2ms</span></div>'+
+        '<div class="src-list">'+sources.map(function(s){return '<span class="src-chip">📄 '+s[0]+' <span class="ranks">'+s[1]+'</span></span>';}).join("")+'</div>'+
+        '<div class="meta-line">引擎:local-extractive · 总耗时 '+(ms||"—")+'ms</div></div>';
+    }
+    ans.innerHTML=html; streaming=false;
+    document.getElementById("messages").scrollTop=1e9;
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+  /* ---------------- 看板条形 ---------------- */
+  function loadDash(){
+    var cats=[["卡务网络",120],["图书馆",82],["奖助学金",81],["教务选课",78],["毕业事项",42],["宿舍生活",42]];
+    var max=120;
+    document.getElementById("dashBars").innerHTML=cats.map(function(c){
+      return '<div class="bar-row"><span>'+c[0]+'</span><div class="bar-track"><div class="bar-fill" style="width:'+(c[1]/max*100)+'%"></div></div><span>'+c[1]+'</span></div>';
+    }).join("");
+  }
+  loadDash();
+
+  /* ---------------- 标注模式 ---------------- */
+  function toggleAnno(){
+    document.body.classList.toggle("annot");
+    var btn=document.getElementById("annoBtn");
+    var on=document.body.classList.contains("annot");
+    btn.classList.toggle("on",on);
+    btn.textContent=on?"① 关闭交互标注":"① 开启交互标注";
+    if(on) document.getElementById("annoPanel").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+  function jumpAnno(key){
+    var el=document.getElementById("a-"+key);
+    if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@ from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Inches, Pt
@@ -32,7 +32,8 @@ TINT = "EEF1FF"; TINT2 = "E3E9FF"; LINE = "E5E9F2"
 DARK = "1C2333"; DARK_CARD = "27304A"; DARK_MUTED = "A8B0C6"; WHITE = "FFFFFF"
 
 W, H, M = 13.333, 7.5, 0.5
-TOTAL = 17
+TOTAL = 22
+_page = 1  # 封面为第 1 页,内容页自动递增
 
 
 def C(hexstr):
@@ -126,10 +127,12 @@ def footer(slide, idx, dark=False):
        [dict(text=f"{idx:02d} · {TOTAL}", size=12, color=c, align=PP_ALIGN.RIGHT)])
 
 
-def header(slide, kicker, title, idx):
+def header(slide, kicker, title):
+    global _page
+    _page += 1
     tb(slide, M, 0.44, 9.0, 0.32, [dict(text=kicker, size=13, bold=True, color=BRAND)])
     tb(slide, M, 0.78, 11.0, 0.62, [dict(text=title, size=29, bold=True, color=INK)])
-    footer(slide, idx)
+    footer(slide, _page)
 
 
 def notes(slide, text):
@@ -219,7 +222,7 @@ notes(s, "开场:一句话定位——面向在校学生的校园事务智能问
 
 # ---------------------------------------------------------------- 2 问题与方案
 s = blank(prs)
-header(s, "问题与方案", "校园事务信息的三堵墙,一套 RAG 系统拆掉它", 2)
+header(s, "问题与方案", "校园事务信息的三堵墙,一套 RAG 系统拆掉它")
 pains = [
     ("信息分散", "规章散落在官网、公众号、群里,新生无从找起"),
     ("口径不一", "同学间口口相传,答案互相矛盾、时常过期"),
@@ -256,7 +259,7 @@ notes(s, "左侧三堵墙是访谈得出的真实痛点;右侧是技术方案的
 
 # ---------------------------------------------------------------- 3 系统架构
 s = blank(prs)
-header(s, "系统架构", "五层分层 · 模块化单体起步,预留服务化边界(ADR-1)", 3)
+header(s, "系统架构", "五层分层 · 模块化单体起步,预留服务化边界(ADR-1)")
 layers = [
     ("接入层", "原生 SPA · 聊天 / 知识库管理 / 运行看板 · SSE 流式渲染", TINT),
     ("网关边界", "令牌桶限流 · ADMIN_TOKEN 鉴权 · CORS · 静态资源托管", TINT),
@@ -285,9 +288,167 @@ for tag, d in adrs:
     ay += 1.02
 notes(s, "架构叙事:五层从上到下一次请求穿过全栈。分层的目的不是分层本身,而是可替换:数据层可外置 PG/向量库,应用层无状态可水平扩展,引擎层 Provider 可插拔。右侧四个 ADR 是文档第 11 章追踪矩阵的入口。")
 
-# ---------------------------------------------------------------- 4 RAG 核心链路
+# ---------------------------------------------------------------- 4 SRS 需求规格
 s = blank(prs)
-header(s, "核心链路", "一条提问的完整旅程:检索、融合、生成、溯源", 4)
+header(s, "需求工程 · SRS", "六项功能需求 + 质量属性六元组:需求的两种表达")
+card(s, M, 1.62, 5.65, 4.95, WHITE, LINE)
+tb(s, M + 0.28, 1.84, 5.0, 0.4, [dict(text="功能需求(FR)", size=15.5, bold=True, color=BRAND)])
+frs = [
+    ("FR-1", "自然语言提问,回答附引用溯源"),
+    ("FR-2", "流式输出,首字 < 1s(meta 事件先推)"),
+    ("FR-3", "多轮会话与历史恢复"),
+    ("FR-4", "知识库管理与热更新,免重启 < 5s"),
+    ("FR-5", "运行看板:命中率 / 时延 / 热点分类"),
+    ("FR-6", "无相关知识时诚实回退,不编造"),
+]
+fy = 2.34
+for tag, d in frs:
+    chip(s, M + 0.28, fy + 0.06, 0.88, 0.36, tag, TINT, BRAND, 11.5)
+    tb(s, M + 1.32, fy + 0.02, 4.15, 0.5, [dict(text=d, size=13, color=INK, line=1.1)], anchor=MSO_ANCHOR.MIDDLE)
+    fy += 0.68
+card(s, 6.45, 1.62, 6.38, 2.98, WHITE, LINE)
+tb(s, 6.73, 1.82, 5.8, 0.4, [dict(text="质量属性场景(六元组)· 示例:可用性", size=15.5, bold=True, color=BRAND)])
+sixtup = [
+    ("刺激源", "云端 LLM 服务(智谱 GLM)"),
+    ("刺激", "API Key 失效 / 请求超时 / 网络中断"),
+    ("制品", "生成服务 generation.py"),
+    ("环境", "正常运行,并发问答进行中"),
+    ("响应", "流内回退本地抽取式生成,降级落日志"),
+    ("响应度量", "服务不中断,回答仍含正解(139 字)"),
+]
+sy = 2.32
+for k, v in sixtup:
+    tb(s, 6.73, sy, 1.35, 0.34, [dict(text=k, size=12, bold=True, color=INK)], anchor=MSO_ANCHOR.MIDDLE)
+    tb(s, 8.13, sy, 4.5, 0.34, [dict(text=v, size=12, color=INK2)], anchor=MSO_ANCHOR.MIDDLE)
+    sy += 0.375
+card(s, 6.45, 4.77, 6.38, 1.8, TINT, None)
+tb(s, 6.73, 4.93, 5.8, 0.35, [dict(text="质量属性目标(NFR)与实测", size=14, bold=True, color=BRAND)])
+nfrs = [("性能", "检索 p95 < 50ms → 实测 1.8ms"), ("可用性", "≥99.5%,降级兜底"),
+        ("安全", "单用户限流 5 QPS"), ("可扩展", "无状态水平扩展"),
+        ("可修改", "Provider 插件化"), ("可测试", "指标全脚本复现")]
+for i, (k, v) in enumerate(nfrs):
+    nx = 6.73 + (i % 3) * 1.95
+    ny = 5.32 + (i // 3) * 0.62
+    tb(s, nx, ny, 1.85, 0.55, [
+        dict(text=k, size=12, bold=True, color=INK, space_after=1),
+        dict(text=v, size=10.5, color=INK2, line=1.05),
+    ])
+notes(s, "SRS 两种表达:功能需求用例式列清(FR-1 到 FR-6 对应追踪矩阵);非功能需求不讲空话,用质量属性六元组场景落到可验证的度量——本页示例就是验收 A1 的原始场景。右下 NFR 每条都带目标值与实测值。")
+
+# ---------------------------------------------------------------- 5 4+1 视图总览
+s = blank(prs)
+header(s, "架构描述 · 4+1 视图", "Kruchten 视图模型:四视图各答一个问题,场景串联")
+quads = [
+    ("逻辑视图", "功能分解", "HybridRetriever · GeneratorProvider · 四组 API 服务", "最终用户", 0.5, 1.66),
+    ("进程视图", "并发与同步", "asyncio 事件循环 · SSE 长连接 · 线程锁热重建", "系统集成者", 7.53, 1.66),
+    ("开发视图", "代码组织", "backend/app 四分包 · frontend SPA · scripts/tests", "开发人员", 0.5, 5.38),
+    ("物理视图", "部署拓扑", "浏览器 → Nginx → uvicorn×N → SQLite · 云端 LLM", "运维人员", 7.53, 5.38),
+]
+for name, q, d, who, x, y in quads:
+    card(s, x, y, 5.3, 1.5, WHITE, LINE)
+    tb(s, x + 0.26, y + 0.16, 3.6, 0.36, [dict(text=name + " · " + q, size=15, bold=True, color=INK)])
+    tb(s, x + 0.26, y + 0.58, 4.85, 0.6, [dict(text=d, size=11.5, color=INK2, line=1.15)])
+    chip(s, x + 3.95, y + 0.14, 1.2, 0.32, who, TINT, BRAND, 10.5)
+card(s, 4.92, 3.35, 3.5, 1.6, TINT2, None)
+tb(s, 5.12, 3.5, 3.1, 1.35, [
+    dict(text="场景视图(+1)", size=15.5, bold=True, color=INK, align=PP_ALIGN.CENTER, space_after=3),
+    dict(text="学生提问 → 带引用回答\n一条端到端用例,驱动并校验四个视图的取舍", size=11.5, color=INK, line=1.2, align=PP_ALIGN.CENTER),
+])
+for bx, by, ex, ey in [(5.8, 3.16, 5.35, 3.62), (7.53, 3.16, 8.0, 3.62), (5.8, 5.38, 5.35, 4.68), (7.53, 5.38, 8.0, 4.68)]:
+    ln = s.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(bx), Inches(by), Inches(ex), Inches(ey))
+    ln.line.color.rgb = C("B8C6FF"); ln.line.width = Pt(1.75); ln.shadow.inherit = False
+notes(s, "4+1 是课程核心模型,用项目把它讲实:逻辑视图答「功能怎么拆」,进程视图答「并发怎么管」,开发视图答「代码怎么组织」,物理视图答「进程怎么部署到节点」,中心的场景视图用一条用例把四者串起来——架构不是四个孤图,是为同一批场景服务的四个投影。下一页给出每个视图在本项目的具体落点。")
+
+# ---------------------------------------------------------------- 6 4+1 视图落地
+s = blank(prs)
+header(s, "架构描述 · 4+1 落地", "五个视图 × 真实工件:每一项都能在仓库里指认")
+views = [
+    ("逻辑视图", "HybridRetriever(BM25Index 倒排 / VectorIndex / fuse_rrf / LightweightReranker)· GeneratorProvider 两实现 · ingestion 热更新 · chat/knowledge/conversations/admin 服务", "最终用户", BRAND),
+    ("进程视图", "asyncio 事件循环承载 SSE 流 · 令牌桶并发控制(桶字典有界)· ingestion 文件锁热重建 · SQLite WAL + 线程局部连接", "系统集成者", PURPLE),
+    ("开发视图", "api / services / repository / core 四分包 · frontend 原生 SPA · scripts(eval/bench/acceptance)· tests 冒烟+完善轮", "开发人员", "946200"),
+    ("物理视图", "浏览器 ⇄ Nginx(可选 TLS/反代,SSE 直通)⇄ uvicorn 多实例 ⇄ SQLite + JSON 知识库 · 外部服务:智谱 GLM / embedding-3", "运维人员", "0E7490"),
+    ("场景视图", "端到端用例:提问 → 双通道检索 → RRF 融合 → SSE 生成 → 引用卡片;每一步分别落在逻辑/进程/物理/开发视图的具体工件上", "全体干系人", "D94F3D"),
+]
+vy = 1.66
+for name, d, who, accent in views:
+    card(s, M, vy, 12.33, 0.98, WHITE, LINE)
+    chip(s, M + 0.22, vy + 0.3, 1.35, 0.38, name, accent, WHITE, 12)
+    tb(s, M + 1.78, vy + 0.1, 8.35, 0.8, [dict(text=d, size=11.5, color=INK2, line=1.18)], anchor=MSO_ANCHOR.MIDDLE)
+    chip(s, M + 10.5, vy + 0.31, 1.6, 0.36, who, TINT, BRAND, 11)
+    vy += 1.06
+notes(s, "答辩时这页最防「纸上架构」质疑:五个视图的每一项都是仓库里可指认的类、模块或部署物。讲法建议:先横读一行逻辑视图,再竖看一条用例如何穿过五行。")
+
+# ---------------------------------------------------------------- 7 数据库建模
+s = blank(prs)
+header(s, "数据设计 · 建模", "三张关系表 + 知识语料:会话可追溯,检索可观测")
+
+def table_card(x, y, w, h, name, fields, note=None):
+    card(s, x, y, w, h, WHITE, LINE)
+    chip(s, x + 0.2, y + 0.16, min(2.9, 0.24 + 0.13 * len(name)), 0.36, name, DARK, WHITE, 12)
+    paras = [dict(text=fields, size=11, color=INK, line=1.35, space_after=4)]
+    if note:
+        paras.append(dict(text=note, size=10.5, color=MUTED, line=1.15))
+    tb(s, x + 0.22, y + 0.62, w - 0.44, h - 0.74, paras)
+
+table_card(M, 1.72, 3.78, 1.62, "conversation 会话",
+           "PK  id(12 位)\n      user_token · title\n      created_at · updated_at")
+table_card(M, 3.86, 3.78, 1.78, "message 消息",
+           "PK  id\nFK  conversation_id\n      role · content\n      sources(JSON)· latency_ms · created_at")
+ln = s.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(2.39), Inches(3.34), Inches(2.39), Inches(3.86))
+ln.line.color.rgb = C(BRAND); ln.line.width = Pt(1.75); ln.shadow.inherit = False
+chip(s, 2.56, 3.42, 0.95, 0.34, "1 : N", TINT2, BRAND, 11.5)
+table_card(4.62, 1.72, 3.78, 2.28, "query_log 查询日志",
+           "PK  id(自增)\n      ts · query · hit\n      top_score · latency_ms\n      category",
+           "仅追加写入,不关联会话;\n聚合后支撑运行看板")
+table_card(8.64, 1.72, 4.19, 2.9, "知识语料 campus_qa.json",
+           "      id · category\n      question · answer\n      tags · source · updated_at",
+           "59 篇文档 → 摄取分块 → 内存双通道索引\n136 chunks(question/answer 各建通道,\ndoc_id 关联引用溯源)")
+ln2 = s.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(8.86), Inches(4.62), Inches(8.86), Inches(5.26))
+ln2.line.color.rgb = C("B8C6FF"); ln2.line.width = Pt(1.75); ln2.shadow.inherit = False
+tb(s, 9.04, 4.68, 3.7, 0.5, [dict(text="启动 / 热更新触发重建(统一文件锁)", size=10.5, color=MUTED)])
+card(s, 8.64, 5.26, 4.19, 0.44, TINT, None)
+tb(s, 8.86, 5.31, 3.8, 0.34, [dict(text="内存索引:BM25 倒排 + 向量矩阵,热更新免重启", size=10.5, bold=True, color=INK)], anchor=MSO_ANCHOR.MIDDLE)
+card(s, M, 5.78, 12.33, 1.1, WHITE, LINE)
+tb(s, M + 0.28, 5.94, 11.8, 0.85, [
+    dict(text="设计要点", size=13.5, bold=True, color=BRAND, space_after=3),
+    dict(text="仓储模式(repository/db.py)隔离 SQL,上层只调函数 → 生产换 PostgreSQL 接口不变 · WAL 模式支持并发读 · 知识文件与索引共用一把锁,双写一致(完善轮 F8 修复)· 会话表与日志表按读写模式分离,看板聚合不打扰业务写入", size=11.5, color=INK2, line=1.25),
+])
+notes(s, "数据建模讲三件事:关系建模——会话与消息 1:N,查询日志独立追加;文档数据——知识语料 JSON 摄取成双通道内存索引,doc_id 贯穿引用溯源;演进设计——仓储模式隔离 SQL,SQLite 到 PostgreSQL 只换实现不换接口。")
+
+# ---------------------------------------------------------------- 8 ADR 决策记录
+s = blank(prs)
+header(s, "架构决策 · ADR", "背景 → 决策 → 后果:两条关键决策的完整推理")
+adrs_full = [
+    ("ADR-2 混合检索 + RRF 融合", [
+        ("背景", "规章类问答词面匹配已很强,但口语化改写单通道易漏召回,且缺少第二视角冗余"),
+        ("决策", "BM25 与向量双通道并行;RRF 对「排名」融合,免两通道分数归一化;文档级去重 + 无知识硬零兜底"),
+        ("后果 · 正", "Hit@3 98.4%;通道可独立演进——embedding-3 语义向量即插即用,接口不变"),
+        ("后果 · 负", "双索引的内存与构建成本;融合参数(RRF_K、阈值)需评测标定,不能拍脑袋"),
+    ]),
+    ("ADR-4 生成 Provider 插件化 + 熔断降级", [
+        ("背景", "课程演示要求零依赖离线可跑,生产要求云端 GLM 的回答质量——单一实现只能二选一"),
+        ("决策", "GeneratorProvider 统一流式接口;默认本地抽取式,配置 Key 即切云端;异常流内回退并落日志"),
+        ("后果 · 正", "演示与生产同构,可用性有硬底——云端全挂仍能回答(验收 A1 PASS)"),
+        ("后果 · 负", "两套实现需双份测试;云端高级特性(函数调用等)受统一接口约束"),
+    ]),
+]
+for ci, (title, rows_) in enumerate(adrs_full):
+    x = M + ci * 6.33
+    card(s, x, 1.62, 6.0, 4.95, WHITE, LINE)
+    tb(s, x + 0.3, 1.86, 5.4, 0.42, [dict(text=title, size=15.5, bold=True, color=INK)])
+    ry = 2.4
+    for tag, d in rows_:
+        tcolor = GREEN_D if tag.startswith("后果 · 正") else ("D94F3D" if tag.startswith("后果 · 负") else BRAND)
+        chip(s, x + 0.3, ry + 0.03, 1.2 if not tag.startswith("后果") else 1.5, 0.34, tag, TINT if not tag.startswith("后果") else ("E7F8F0" if tag.endswith("正") else "FDEEEA"), tcolor, 11)
+        tb(s, x + (1.7 if not tag.startswith("后果") else 2.0), ry - 0.02, 6.0 - (2.0 if not tag.startswith("后果") else 2.3) - 0.15, 1.0, [dict(text=d, size=11.5, color=INK2, line=1.2)])
+        ry += 1.02
+tb(s, M, 6.68, 12.3, 0.3,
+   [dict(text="决策记录格式:背景 / 决策 / 后果(正负并列);完整 7 条 ADR 与追踪矩阵见架构设计文档第 11 章 · docs/traceability.md", size=12, color=MUTED)])
+notes(s, "ADR 是「为什么这么做」的沉淀:每条决策都写清权衡与代价——包括负后果。讲 ADR-4 时强调可用性硬底是设计出来的不是碰运气:接口统一才可能流内降级。")
+
+# ---------------------------------------------------------------- 9 RAG 核心链路
+s = blank(prs)
+header(s, "核心链路", "一条提问的完整旅程:检索、融合、生成、溯源")
 steps = [("提问", "≤500 字\n口语化问法"), ("双通道检索", "BM25 top20\n∥ 向量 top20"),
          ("RRF 融合", "Σ1/(k+rank)\nk=60 对排名融合"), ("重排(实验)", "RERANK_ENABLED\n默认关·实测无收益"),
          ("SSE 生成", "meta 先推引用\n打字机式输出"), ("引用溯源", "来源+BM25/VEC\n双通道排名")]
@@ -328,7 +489,7 @@ notes(s, "沿着链路讲一遍:双通道并行召回、RRF 只看排名不比�
 
 # ---------------------------------------------------------------- 5 混合检索双通道
 s = blank(prs)
-header(s, "检索引擎 · 双通道", "稀疏管精确,稠密管语义,RRF 只融合排名", 5)
+header(s, "检索引擎 · 双通道", "稀疏管精确,稠密管语义,RRF 只融合排名")
 card(s, M, 1.62, 6.0, 3.3, WHITE, LINE)
 tb(s, M + 0.3, 1.84, 5.4, 0.4, [dict(text="BM25 · 稀疏通道", size=16, bold=True, color=INK)])
 tb(s, M + 0.3, 2.32, 5.45, 2.4, [
@@ -354,7 +515,7 @@ notes(s, "双通道定位要说清:BM25 管关键词精确匹配,向量管语义
 
 # ---------------------------------------------------------------- 6 可插拔 Provider
 s = blank(prs)
-header(s, "生成与向量 · Provider 插件化", "同类可替换:无 Key 离线可跑,有 Key 一键上云", 6)
+header(s, "生成与向量 · Provider 插件化", "同类可替换:无 Key 离线可跑,有 Key 一键上云")
 cols = [
     ("生成 Generator", [
         ("本地抽取式(默认)", "离线零依赖 · 抽取式合成 · 降级兜底", BRAND),
@@ -387,7 +548,7 @@ notes(s, "这一页讲架构决策 ADR-4/ADR-7 的落地:两端 Provider 同一�
 
 # ---------------------------------------------------------------- 7 产品一览
 s = blank(prs)
-header(s, "产品一览", "三个视图:问答、知识库治理、运行看板", 7)
+header(s, "产品一览", "三个视图:问答、知识库治理、运行看板")
 img = pic(s, round_img("ui_chat_citations.png"), M, 1.62, 8.0, 5.0)
 img.line.color.rgb = C(LINE); img.line.width = Pt(1)
 tb(s, M, 6.68, 8.0, 0.3,
@@ -405,7 +566,7 @@ notes(s, "产品三视图走一遍:左边是核心体验——回答带引用卡
 
 # ---------------------------------------------------------------- 8 安全与稳定性
 s = blank(prs)
-header(s, "安全与稳定性", "四道防线:从入口到内容逐层设防", 8)
+header(s, "安全与稳定性", "四道防线:从入口到内容逐层设防")
 rows = [
     ("入口限流", "令牌桶 5 QPS / 突发 10,按用户隔离;桶字典有界(≤1 万,最久未活跃淘汰),伪造 token 无法耗尽内存", "200×10+429×5"),
     ("熔断降级", "云端 GLM 异常 → 流内回退本地抽取式生成;降级原因落日志,频率/超时/网络/鉴权可归因", "139字·不中断"),
@@ -424,7 +585,7 @@ notes(s, "四道防线从外到内:入口限流保可用性;生成熔断保服�
 
 # ---------------------------------------------------------------- 9 检索评测
 s = blank(prs)
-header(s, "质量证据 · 检索评测", "62 条口语化改写 × 四条链路,统一文档级去重口径", 9)
+header(s, "质量证据 · 检索评测", "62 条口语化改写 × 四条链路,统一文档级去重口径")
 chart_data = CategoryChartData()
 chart_data.categories = ["BM25-only", "向量 TF-IDF", "混合+RRF(生产)", "混合+重排(实验)"]
 chart_data.add_series("Hit@1", (80.6, 75.8, 80.6, 77.4))
@@ -471,7 +632,7 @@ notes(s, "评测方法先讲口径:62 条口语化改写、文档级去重、四
 
 # ---------------------------------------------------------------- 10 性能基准
 s = blank(prs)
-header(s, "质量证据 · 性能基准", "检索快到不是瓶颈,生成端吞吐 44 QPS 零失败", 10)
+header(s, "质量证据 · 性能基准", "检索快到不是瓶颈,生成端吞吐 44 QPS 零失败")
 stat_cards = [
     ("880", "QPS", "retrieval-only · RRF 生产链路(修正口径实测,515.8–880.4)", BRAND),
     ("44", "QPS", "local-extractive E2E(并发 20,含生成+落库)", PURPLE),
@@ -512,7 +673,7 @@ notes(s, "三个大数字先说结论:检索 880 QPS、端到端 44 QPS、零失
 
 # ---------------------------------------------------------------- 11 四项架构验收
 s = blank(prs)
-header(s, "质量证据 · 架构验收", "四个最像「翻车现场」的场景,4/4 PASS", 11)
+header(s, "质量证据 · 架构验收", "四个最像「翻车现场」的场景,4/4 PASS")
 acc = [
     ("A1 生成降级", "云端 GLM 配置无效 Key", "流内自动回退本地抽取式,产出 139 字含正解关键信息,服务不中断"),
     ("A2 入口限流", "单用户并发突发 15 请求", "令牌桶精确放行 10、拒绝 5:200×10 + 429×5"),
@@ -530,7 +691,7 @@ notes(s, "验收脚本 acceptance.py 全走真实 HTTP/进程内执行,不是 mo
 
 # ---------------------------------------------------------------- 12 完善轮总览
 s = blank(prs)
-header(s, "2026-10 完善轮", "独立二轮调研:9 项真实缺陷,全部修复并验证", 12)
+header(s, "2026-10 完善轮", "独立二轮调研:9 项真实缺陷,全部修复并验证")
 tb(s, M, 1.42, 7.6, 0.35,
    [dict(text="方法:基线复现(pytest/评测/验收全绿)→ 全量代码审查 → 对照实验驱动修复", size=12.5, color=INK2)])
 groups = [
@@ -563,7 +724,7 @@ notes(s, "完善轮的定位:不是重写,是独立视角的二轮调研。左�
 
 # ---------------------------------------------------------------- 13 深挖 F1
 s = blank(prs)
-header(s, "完善轮深挖 · F1", "名为 RRF,实为通道计数:一个被语料掩盖的公式错误", 13)
+header(s, "完善轮深挖 · F1", "名为 RRF,实为通道计数:一个被语料掩盖的公式错误")
 card(s, M, 1.62, 6.0, 1.72, WHITE, LINE)
 tb(s, M + 0.28, 1.78, 5.5, 1.45, [
     dict(text="修复前(错误)", size=13, bold=True, color="D94F3D", space_after=4),
@@ -595,7 +756,7 @@ notes(s, "这是完善轮最有代表性的一页:实现与设计文档不一致
 
 # ---------------------------------------------------------------- 14 深挖 F6+F9
 s = blank(prs)
-header(s, "完善轮深挖 · F6 / F9", "倒排索引 10–35 倍加速,与一次基准口径纠偏", 14)
+header(s, "完善轮深挖 · F6 / F9", "倒排索引 10–35 倍加速,与一次基准口径纠偏")
 chart_data = CategoryChartData()
 chart_data.categories = ["当前语料 136 chunks", "20× 语料 2,720 chunks"]
 chart_data.add_series("旧 · 全量扫描", (2145, 68))
@@ -635,7 +796,7 @@ notes(s, "F6 讲扩展性:倒排索引让 BM25 通道在 20 倍语料下从 68 Q
 
 # ---------------------------------------------------------------- 15 工程方法
 s = blank(prs)
-header(s, "工程方法", "评测驱动 · 如实原则:数字怎么来,就怎么写", 15)
+header(s, "工程方法", "评测驱动 · 如实原则:数字怎么来,就怎么写")
 items = [
     ("评测驱动", "62 条口语化改写评测集是第一工具:停用词 bug、候选池截断、文档级去重缺失……三个真实缺陷均由评测指标异常暴露,再定位修复", BRAND),
     ("如实原则", "TF-IDF 非语义嵌入主动声明;指标口径演变全程留痕(旧值 95.2 → 98.4 并存);商业定价标注「假设示例」", PURPLE),
@@ -652,7 +813,7 @@ notes(s, "这页讲方法论,也是这门课想展示的软实力:评测集是�
 
 # ---------------------------------------------------------------- 16 总结与展望
 s = blank(prs)
-header(s, "总结与展望", "交付了什么,下一步去哪", 16)
+header(s, "总结与展望", "交付了什么,下一步去哪")
 card(s, M, 1.62, 6.0, 4.92, WHITE, LINE)
 tb(s, M + 0.3, 1.86, 5.4, 0.4, [dict(text="已交付", size=16.5, bold=True, color=BRAND)])
 dones = [
