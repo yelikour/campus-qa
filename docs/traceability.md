@@ -73,6 +73,7 @@
 | F7 | 云端生成降级静默吞异常 | 故障不可归因(频率/超时/网络/鉴权无法区分) | 降级原因落日志 | test_zhipu_fallback_logs_reason |
 | F8 | 知识删除在 ingestion 文件锁外读写 JSON | 与新增并发时读写竞态,可能丢更新或索引-文件不一致 | remove_document 并入统一锁;文件单次读取 | test_remove_document_semantics |
 | F9 | bench.py retrieval 基准误测重排路径(retrieve 默认 rerank=True) | "默认 Hybrid+RRF 链路"吞吐被系统性低估,与宣称口径不符 | `retrieve(q, rerank=RERANK_ENABLED)`,输出标签标注实际链路 | 修正后同机实测 RRF 路径 515.8–880.4 QPS / p50 1.1–1.9ms(vs 重排路径 ~33 QPS) |
+| F10(2026-10-27) | 会话读取/删除未校验属主,可水平越权读删他人会话 | 隐私泄露 + 数据破坏(知道 12 位会话 id 即可操作) | db.get_conversation + API 归属校验,非属主与不存在统一 404;前端请求带令牌 | test_conversation_isolation;HTTP 手验 4/4(artifacts/validation_2026-10-27.txt) |
 
 完善轮复测:pytest 13/13(新增 9 项)、eval_matrix 四路指标见 §五上方 2026-10-16 复测表(REPRODUCIBILITY.md §3)、acceptance 4/4 PASS、E2E 43.3 QPS / 0 失败(Win/x64)。
 

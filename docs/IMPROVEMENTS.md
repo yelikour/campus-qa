@@ -120,7 +120,19 @@
 - **CORS 收紧**:同源部署(前端由本服务/Nginx 托管)下 `allow_origins=["*"]` 风险有限;
   生产化部署清单已在《经济适用型与运营方案》反向代理章节覆盖,不在本轮代码改动。
 
-## 10. 回归验证汇总(2026-10-16,Windows 11 x64 / Python 3.12.10)
+## 10. 2026-10-27 三轮增补:F10 会话越权
+
+- **发现**:`GET/DELETE /api/conversations/{cid}` 未校验会话属主——知道(或枚举到)12 位会话 id
+  即可读取他人完整对话(含引用快照)或删除他人会话(水平越权)。首轮调研曾记录为次要项,本轮修复。
+- **修复**:仓储层新增 `get_conversation(cid)`;API 层 `_own_conversation` 校验 `X-User-Token`
+  与属主一致;**不一致与不存在统一返回 404**,不泄露会话存在性;前端历史回放请求补带用户令牌。
+- **证据**:`tests/test_improvements.py::test_conversation_isolation`(B 越权读/删 404,A 正常 200/200);
+  HTTP 手验同结论(artifacts/validation_2026-10-27.txt §6)。
+- **卫生优化(同轮)**:`ingestion._load_seed` 公有化为 `load_seed`,API 层不再触私有函数。
+- **三轮回归**:pytest **14/14**(新增 1 项)、评测矩阵四路不变、验收 4/4 PASS、
+  retrieval 665-679 QPS / E2E 42-43 QPS 0 失败(Win/x64,2026-10-27 实测)。
+
+## 11. 回归验证汇总(2026-10-16,Windows 11 x64 / Python 3.12.10)
 
 | 验证项 | 命令 | 结果 |
 |---|---|---|

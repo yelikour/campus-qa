@@ -73,6 +73,12 @@ def list_conversations(user_token: str, limit: int = 50):
     return [dict(r) for r in rows]
 
 
+def get_conversation(cid: str):
+    """按 id 取会话行(id/user_token/title);不存在返回 None,供 API 层做归属校验。"""
+    return get_conn().execute(
+        "SELECT id, user_token, title FROM conversation WHERE id=?", (cid,)).fetchone()
+
+
 def get_messages(cid: str):
     rows = get_conn().execute(
         "SELECT role, content, sources, created_at FROM message WHERE conversation_id=? ORDER BY created_at",

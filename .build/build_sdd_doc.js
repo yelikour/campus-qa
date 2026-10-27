@@ -38,7 +38,7 @@ children.push(h2("2.2  分层职责"));
 children.push(tableTitle("表 2-1  分层职责与技术选型"));
 children.push(hTable(["层次", "职责", "主要构件"], [
   ["接入层", "用户交互与流式渲染", "原生 SPA 三视图(问答/知识库/看板),SSE 解析,输出全量转义"],
-  ["网关边界", "限流、鉴权、跨域", "令牌桶(5 QPS/突发 10,桶字典有界)、ADMIN_TOKEN 写鉴权、CORS"],
+  ["网关边界", "限流、鉴权、跨域", "令牌桶(5 QPS/突发 10,桶字典有界)、ADMIN_TOKEN 写鉴权、会话属主校验(F10)、CORS"],
   ["应用服务", "用例编排", "chat(SSE 问答)、knowledge(增删查+热更新)、conversations、admin(统计)"],
   ["RAG 引擎", "检索与生成", "BM25Index(倒排)、VectorIndex(TF-IDF/embedding-3)、fuse_rrf、Reranker 开关、GeneratorProvider"],
   ["数据层", "持久化与语料", "SQLite(WAL,会话/消息/查询日志)、campus_qa.json 知识语料、内存索引(热重建)"],
@@ -185,9 +185,9 @@ children.push(hTable(["基准", "QPS", "p50", "p95", "p99", "失败"], [
   ["E2E 并发 20(含生成+落库)", "42.1-43.3", "413-425ms", "628-647ms", "727-761ms", "0"],
 ], [3300, 1500, 1200, 1200, 1200, 945]));
 children.push(bullet("架构验收 4/4 PASS:A1 生成降级(139 字正解)/ A2 入口限流(200x10+429x5)/ A3 热更新(版本递增)/ A4 无知识兜底(sources=0)"));
-children.push(bullet("单元测试 13/13(冒烟 4 + 完善轮 9:RRF 公式、倒排等价、鉴权、桶淘汰、删除语义、降级日志等)"));
+children.push(bullet("单元测试 14/14(冒烟 4 + 回归 10:RRF 公式、倒排等价、鉴权、桶淘汰、删除语义、降级日志、会话属主隔离等)"));
 children.push(h2("10.3  追踪矩阵"));
-children.push(body("需求 \u2192 质量属性 \u2192 ADR \u2192 模块 \u2192 测试 \u2192 证据的完整映射维护于仓库 docs/traceability.md(含 2026-10-16 完善轮 F1-F9 修复行,见 docs/IMPROVEMENTS.md)。本文档与《SRS》《UI 原型》共同构成课程交付物;仓库 github.com/yelikour/campus-qa(公开)。"));
+children.push(body("需求 \u2192 质量属性 \u2192 ADR \u2192 模块 \u2192 测试 \u2192 证据的完整映射维护于仓库 docs/traceability.md(含 2026-10-16 完善轮 F1-F9 与 2026-10-27 F10 会话越权修复行,见 docs/IMPROVEMENTS.md)。本文档与《SRS》《UI 原型》共同构成课程交付物;仓库 github.com/yelikour/campus-qa(公开)。"));
 
 // ================================================================ 组装
 const doc = new Document({

@@ -139,7 +139,7 @@ async function openConversation(cid) {
   conversationId = cid;
   loadHistory();
   switchView("chat");
-  const resp = await fetch(`${API}/api/conversations/${cid}/messages`);
+  const resp = await fetch(`${API}/api/conversations/${cid}/messages`, { headers: { "X-User-Token": USER_TOKEN } });
   const msgs = await resp.json();
   const box = document.getElementById("messages");
   box.innerHTML = "";

@@ -30,7 +30,7 @@ class KnowledgeItem(BaseModel):
 @router.get("")
 def list_knowledge(page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=50),
                    category: str | None = None, q: str | None = None):
-    docs = ingestion._load_seed()
+    docs = ingestion.load_seed()
     categories = sorted({d["category"] for d in docs})
     if category:
         docs = [d for d in docs if d["category"] == category]

@@ -11,7 +11,7 @@ from .retrieval import KnowledgeChunk, retriever
 _lock = threading.Lock()
 
 
-def _load_seed() -> list[dict]:
+def load_seed() -> list[dict]:
     with open(settings.SEED_QA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
@@ -56,14 +56,14 @@ def _rebuild(docs: list[dict]) -> int:
 
 
 def rebuild_index(docs: list[dict] | None = None) -> int:
-    docs = docs if docs is not None else _load_seed()
+    docs = docs if docs is not None else load_seed()
     with _lock:
         return _rebuild(docs)
 
 
 def add_documents(entries: list[dict]) -> tuple[int, list[str]]:
     with _lock:
-        docs = _load_seed()
+        docs = load_seed()
         base = max((int(d["id"].split("-")[-1]) for d in docs), default=0) if docs else 0
         new_ids = []
         for i, e in enumerate(entries, start=base + 1):
@@ -85,7 +85,7 @@ def remove_document(doc_id: str) -> int:
     不存在时抛 KeyError,由 API 层转 404。
     """
     with _lock:
-        docs = _load_seed()
+        docs = load_seed()
         rest = [d for d in docs if d["id"] != doc_id]
         if len(rest) == len(docs):
             raise KeyError(doc_id)
@@ -95,5 +95,5 @@ def remove_document(doc_id: str) -> int:
 
 def startup() -> int:
     n = rebuild_index()
-    print(f"[ingestion] 索引就绪:{len(_load_seed())} 篇文档 / {n} 个 chunk")
+    print(f"[ingestion] 索引就绪:{len(load_seed())} 篇文档 / {n} 个 chunk")
     return n

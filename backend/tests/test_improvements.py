@@ -65,7 +65,7 @@ def test_vec_rank_absent_when_only_bm25_hits():
 # ---------------------------------------------------------------- BM25 倒排索引等价性
 def test_bm25_inverted_index_equivalent_to_bruteforce():
     """倒排索引实现与逐文档暴力扫描(旧实现算法)在真实语料上逐查询一致。"""
-    docs = ingestion._load_seed()
+    docs = ingestion.load_seed()
     chunks = ingestion._to_chunks(docs)
     idx = BM25Index(chunks)
     k1, b = idx.k1, idx.b
@@ -157,22 +157,52 @@ def test_token_bucket_eviction():
 # ---------------------------------------------------------------- 知识删除一致性
 def test_remove_document_semantics():
     """删除存在条目 → 文件与索引同步;删除不存在条目 → KeyError。"""
-    docs_before = ingestion._load_seed()
+    docs_before = ingestion.load_seed()
     entry = [{"category": "临时", "question": "删除语义测试问法?", "answer": "删除语义测试答案。",
               "source": "单元测试", "tags": []}]
     _, ids = ingestion.add_documents(entry)
     did = ids[0]
-    assert any(d["id"] == did for d in ingestion._load_seed()), "新增后应存在"
+    assert any(d["id"] == did for d in ingestion.load_seed()), "新增后应存在"
     assert any(c.doc_id == did for c in retriever.chunks), "索引应含新 chunk"
     ingestion.remove_document(did)
-    assert all(d["id"] != did for d in ingestion._load_seed()), "删除后应不存在"
+    assert all(d["id"] != did for d in ingestion.load_seed()), "删除后应不存在"
     assert all(c.doc_id != did for c in retriever.chunks), "索引应同步移除"
     try:
         ingestion.remove_document(did)
         raise AssertionError("重复删除应抛 KeyError")
     except KeyError:
         pass
-    assert len(ingestion._load_seed()) == len(docs_before), "增删后语料应恢复原状"
+    assert len(ingestion.load_seed()) == len(docs_before), "增删后语料应恢复原状"
+
+
+# ---------------------------------------------------------------- 会话归属隔离(F10)
+def test_conversation_isolation():
+    """会话读取/删除须校验属主:他人令牌访问返回 404,属主正常访问。"""
+    import json
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    with TestClient(app) as client:
+        # 用户 A 建立会话并提问(SSE meta 事件携带 conversation_id)
+        with client.stream("POST", "/api/chat", json={"message": "图书馆开放时间"},
+                           headers={"X-User-Token": "iso-user-a"}) as resp:
+            meta_cid = None
+            for line in resp.iter_lines():
+                if line.startswith("data:") and "conversation_id" in line:
+                    meta_cid = json.loads(line[5:].strip())["conversation_id"]
+                    break
+        assert meta_cid, "应从 meta 事件取到会话 id"
+
+        # 用户 B 越权读取/删除 → 404(与不存在一致,不泄露存在性)
+        assert client.get(f"/api/conversations/{meta_cid}/messages",
+                          headers={"X-User-Token": "iso-user-b"}).status_code == 404
+        assert client.delete(f"/api/conversations/{meta_cid}",
+                             headers={"X-User-Token": "iso-user-b"}).status_code == 404
+        # 属主 A 正常读取与删除
+        assert client.get(f"/api/conversations/{meta_cid}/messages",
+                          headers={"X-User-Token": "iso-user-a"}).status_code == 200
+        assert client.delete(f"/api/conversations/{meta_cid}",
+                             headers={"X-User-Token": "iso-user-a"}).status_code == 200
 
 
 # ---------------------------------------------------------------- 降级可归因
